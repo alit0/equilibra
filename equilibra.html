@@ -139,22 +139,24 @@ details p{color:var(--ink2);margin-top:12px;max-width:70ch;font-size:15px}
 .faq{margin-top:44px;max-width:900px}
 
 #turnos{background:var(--cream)}
-.book{display:grid;grid-template-columns:1.05fr .95fr;gap:clamp(24px,4vw,48px);margin-top:clamp(28px,4vw,48px);align-items:stretch}
+.book{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:clamp(22px,3.5vw,40px);margin-top:clamp(28px,4vw,48px);align-items:stretch}
 .book-copy h3{font-family:var(--disp);font-weight:800;font-size:clamp(28px,3.6vw,46px);letter-spacing:-.035em;line-height:1;margin:0 0 14px}
 .book-copy p{color:var(--ink2);margin:0 0 18px;max-width:46ch;font-size:clamp(15px,1.15vw,17px)}
 .book-list{display:grid;gap:12px;margin:0;padding:0;list-style:none}
 .book-list li{display:grid;grid-template-columns:28px 1fr;gap:12px;align-items:start;color:var(--ink2);font-size:14.5px}
 .book-list b{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:999px;border:1px solid var(--line);font-family:var(--mono);font-size:11px;letter-spacing:.08em;color:var(--green)}
-.book-panel{background:var(--paper);border:1px solid var(--line);padding:clamp(22px,3vw,34px);display:flex;flex-direction:column;justify-content:center;min-height:100%}
-.book-panel .eyebrow{margin-bottom:14px}
-.book-panel h3{font-family:var(--disp);font-weight:800;font-size:clamp(24px,2.8vw,34px);letter-spacing:-.03em;line-height:1.05;margin:0 0 12px}
-.book-panel p{color:var(--ink2);margin:0 0 22px;font-size:15px}
-.book-panel .acts{justify-content:flex-start;margin-top:0}
-.book-note{margin-top:16px;font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3)}
+.book-panel{background:var(--paper);border:1px solid var(--line);padding:clamp(14px,2vw,18px);display:flex;flex-direction:column;min-height:100%}
+.book-frame-wrap{position:relative;width:100%;min-height:min(78vh,760px);border:1px solid var(--line);background:#fff;overflow:hidden}
+.book-frame{position:absolute;inset:0;width:100%;height:100%;border:0;display:block;background:#fff}
+.book-fallback{display:flex;flex-direction:column;justify-content:center;gap:12px;min-height:280px;padding:clamp(18px,3vw,28px)}
+.book-fallback h3{font-family:var(--disp);font-weight:800;font-size:clamp(22px,2.6vw,32px);letter-spacing:-.03em;line-height:1.05;margin:0}
+.book-fallback p{color:var(--ink2);margin:0;font-size:15px}
+.book-actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:14px}
+.book-note{margin-top:12px;font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3)}
 @media(max-width:860px){
  .book{grid-template-columns:1fr}
- .book-panel .acts{justify-content:stretch}
- .book-panel .acts .btn{width:100%;text-align:center}
+ .book-frame-wrap{min-height:72vh}
+ .book-actions .btn{width:100%;text-align:center}
 }
 #contacto{background:var(--paper);text-align:center}
 #contacto h2{font-size:clamp(36px,5.6vw,78px);max-width:15ch;margin:0 auto}
@@ -405,21 +407,29 @@ body.nav-lock{overflow:hidden;touch-action:none}
  <div class="lead">Reservá tu evaluación sin idas y vueltas.</div>
  <div class="book">
   <div class="book-copy">
-   <h3>Agenda online con Easy!Appointments</h3>
+   <h3>Agenda online de Equilibra</h3>
    <p>Elegí día y horario disponibles, dejá tus datos y recibí la confirmación. Si preferís hablar con alguien, también podés escribirnos por WhatsApp.</p>
    <ul class="book-list">
     <li><b>01</b><span>Elegí el servicio de evaluación de pisada.</span></li>
     <li><b>02</b><span>Seleccioná fecha y horario disponibles en Belgrano.</span></li>
     <li><b>03</b><span>Completá tus datos y confirmá el turno.</span></li>
    </ul>
+   <div class="book-actions">
+    <a class="btn btn-solid" href="https://turnos.allitto.com/" target="_blank" rel="noopener">Abrir agenda en pestaña nueva</a>
+    <a class="btn" href="https://wa.me/5491135726305">WhatsApp</a>
+   </div>
+   <div class="book-note">Si el calendario no carga, usá el botón de arriba.</div>
   </div>
   <div class="book-panel">
-   <div class="eyebrow">Turnos online</div>
-   <h3>Agendá en minutos</h3>
-   <p>Te llevamos al sistema de turnos de Equilibra para completar la reserva de forma segura.</p>
-   <div class="acts">
-    <a class="btn btn-solid" href="https://turnos.allitto.com/" target="_blank" rel="noopener">Ir a agendar turno</a>
-    <a class="btn" href="https://wa.me/5491135726305">WhatsApp</a>
+   <div class="book-frame-wrap">
+    <iframe
+      class="book-frame"
+      src="https://turnos.allitto.com/"
+      title="Agenda de turnos Equilibra"
+      loading="lazy"
+      referrerpolicy="no-referrer-when-downgrade"
+      allow="payment *"
+    ></iframe>
    </div>
    <div class="book-note">turnos.allitto.com</div>
   </div>
