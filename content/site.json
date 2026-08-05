@@ -1,0 +1,31 @@
+{
+  "site_name": "Equilibra",
+  "site_url": "https://soyequilibra.com.ar/",
+  "locale": "es_AR",
+  "title": "Equilibra · Biomecánica podal y plantillas a medida",
+  "description": "Estudio de biomecánica podal en Belgrano, CABA. Baropodometría digital y plantillas 100% a medida, diseñadas desde tu pisada.",
+  "entity_statement": "Equilibra es un estudio de biomecánica podal en Belgrano, Buenos Aires.",
+  "telephone": "+54 9 11 3572-6305",
+  "area_served": [
+    {
+      "name": "Belgrano",
+      "type": "City",
+      "containedInPlace": {
+        "name": "Ciudad Autónoma de Buenos Aires",
+        "type": "AdministrativeArea",
+        "addressCountry": "AR"
+      }
+    }
+  ],
+  "og_image": null,
+  "services": [
+    {
+      "name": "Baropodometría digital",
+      "description": "Estudio digital de la pisada en estático y, cuando corresponde, en movimiento, para mapear los puntos de presión y la distribución de carga."
+    },
+    {
+      "name": "Plantillas a medida",
+      "description": "Plantillas personalizadas diseñadas a partir del estudio biomecánico, fabricadas con goma EVA y resina termo-moldeable según la pisada de cada paciente."
+    }
+  ]
+}

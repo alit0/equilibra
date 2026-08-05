@@ -1,0 +1,52 @@
+{
+  "items": [
+    {
+      "question": "¿Qué es la baropodometría?",
+      "answer": "Es un estudio digital de la pisada. No es solo una foto de la planta: muestra cómo se distribuyen las presiones cuando estás quieto y, cuando corresponde, también mientras caminás. Con ese mapa decidimos si hace falta plantilla y cómo diseñarla."
+    },
+    {
+      "question": "¿Es lo mismo que la prueba de una casa de deportes?",
+      "answer": "No. En muchos locales deportivos se hace una prueba simple para recomendar zapatillas. En Equilibra el enfoque es de salud: medimos tu mapa de presiones y, si corresponde, fabricamos una plantilla personalizada."
+    },
+    {
+      "question": "¿Me van a doler los primeros días?",
+      "answer": "Molestar un poco, puede. Doler, no es lo esperable. Tu pie viene apoyando de una forma hace años y la plantilla le propone otra. Hay un período de prueba de 15 días: si no se adapta bien, coordinamos un ajuste sin cargo."
+    },
+    {
+      "question": "¿Entran en cualquier calzado?",
+      "answer": "En la mayoría de zapatillas y en muchos zapatos con plantilla extraíble, sí. También en calzado de trabajo y botines de seguridad, según el modelo. Traé el par que más usás el día del estudio. En sandalias o tacos el escenario es más limitado y lo hablamos con honestidad."
+    },
+    {
+      "question": "¿Sirven solo para pie plano?",
+      "answer": "No. También trabajamos pies cavos/supinadores y otros patrones de sobrecarga. El diseño depende de tu mapa de presiones, no de una etiqueta genérica."
+    },
+    {
+      "question": "¿Es lo mismo una plantilla de gel de farmacia?",
+      "answer": "No. El gel puede amortiguar un rato. La plantilla personalizada se diseña para tu pisada y busca corregir puntos de presión, no solo ablandar el apoyo."
+    },
+    {
+      "question": "¿Atienden niños?",
+      "answer": "Sí. Recomendamos evaluar a partir de los 4 años, sobre todo si hay caídas frecuentes, molestias, pies hacia adentro o dudas sobre el desarrollo de la marcha. En crecimiento el seguimiento es más frecuente."
+    },
+    {
+      "question": "¿Se hace una sola plantilla si me duele un solo pie?",
+      "answer": "No. Se trabaja el par completo, porque el cuerpo funciona como un sistema. Corregir un solo lado puede generar un nuevo desequilibrio."
+    },
+    {
+      "question": "¿Cuánto tardan y cuánto duran?",
+      "answer": "El estudio y el diagnóstico se hacen en la visita. La fabricación estimada es de 7 a 10 días hábiles y te avisamos cuando estén listas. Como referencia, la vida útil ronda 1 año según uso, desgaste y cambios del cuerpo; en el control evaluamos el estado."
+    },
+    {
+      "question": "¿Dónde atienden?",
+      "answer": "Hoy el punto confirmado es Belgrano, CABA. También estamos avanzando en Monte Castro y evaluando atención en Mercedes, Buenos Aires, pero todavía no están confirmados como sedes abiertas."
+    },
+    {
+      "question": "¿Necesito una derivación médica?",
+      "answer": "No hace falta para el estudio. Si el diagnóstico muestra algo que excede lo biomecánico, te orientamos y, si corresponde, te derivamos."
+    },
+    {
+      "question": "¿Y si ya tengo plantillas?",
+      "answer": "Traelas. Ver cómo están gastadas y cómo responde tu pisada con ellas puestas es información valiosa para el estudio."
+    }
+  ]
+}
