@@ -137,6 +137,25 @@ summary::after{content:"+";font-family:var(--mono);color:var(--green);font-size:
 details[open] summary::after{content:"–"}
 details p{color:var(--ink2);margin-top:12px;max-width:70ch;font-size:15px}
 .faq{margin-top:44px;max-width:900px}
+
+#turnos{background:var(--cream)}
+.book{display:grid;grid-template-columns:1.05fr .95fr;gap:clamp(24px,4vw,48px);margin-top:clamp(28px,4vw,48px);align-items:stretch}
+.book-copy h3{font-family:var(--disp);font-weight:800;font-size:clamp(28px,3.6vw,46px);letter-spacing:-.035em;line-height:1;margin:0 0 14px}
+.book-copy p{color:var(--ink2);margin:0 0 18px;max-width:46ch;font-size:clamp(15px,1.15vw,17px)}
+.book-list{display:grid;gap:12px;margin:0;padding:0;list-style:none}
+.book-list li{display:grid;grid-template-columns:28px 1fr;gap:12px;align-items:start;color:var(--ink2);font-size:14.5px}
+.book-list b{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:999px;border:1px solid var(--line);font-family:var(--mono);font-size:11px;letter-spacing:.08em;color:var(--green)}
+.book-panel{background:var(--paper);border:1px solid var(--line);padding:clamp(22px,3vw,34px);display:flex;flex-direction:column;justify-content:center;min-height:100%}
+.book-panel .eyebrow{margin-bottom:14px}
+.book-panel h3{font-family:var(--disp);font-weight:800;font-size:clamp(24px,2.8vw,34px);letter-spacing:-.03em;line-height:1.05;margin:0 0 12px}
+.book-panel p{color:var(--ink2);margin:0 0 22px;font-size:15px}
+.book-panel .acts{justify-content:flex-start;margin-top:0}
+.book-note{margin-top:16px;font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3)}
+@media(max-width:860px){
+ .book{grid-template-columns:1fr}
+ .book-panel .acts{justify-content:stretch}
+ .book-panel .acts .btn{width:100%;text-align:center}
+}
 #contacto{background:var(--paper);text-align:center}
 #contacto h2{font-size:clamp(36px,5.6vw,78px);max-width:15ch;margin:0 auto}
 #contacto p{color:var(--ink2);margin:20px auto 0;max-width:46ch}
@@ -251,13 +270,14 @@ body.nav-lock{overflow:hidden;touch-action:none}
 }
 </style></head><body>
 <header id="hd"><a class="brand" href="#top" aria-label="Equilibra inicio"><img class="brand-logo" src="logo_horizontal.svg" alt="Equilibra" width="168" height="34" decoding="async"><img class="brand-logo-iso" src="iso.svg" alt="Equilibra" width="36" height="36" decoding="async"></a>
-<nav class="nav-desktop" aria-label="Principal"><a href="#servicios">Servicios</a><a href="#deportes">Deportes</a><a href="#proceso">Proceso</a><a href="#faq">Preguntas</a></nav>
+<nav class="nav-desktop" aria-label="Principal"><a href="#servicios">Servicios</a><a href="#deportes">Deportes</a><a href="#proceso">Proceso</a><a href="#turnos">Turnos</a><a href="#faq">Preguntas</a></nav>
 <a class="btn btn-header" href="https://turnos.allitto.com/" target="_blank" rel="noopener">Agendar</a>
 <button class="nav-toggle" type="button" aria-label="Abrir menú" aria-expanded="false" aria-controls="navDrawer"><span></span></button>
 <div class="nav-drawer" id="navDrawer" hidden>
  <a href="#servicios">Servicios</a>
  <a href="#deportes">Deportes</a>
  <a href="#proceso">Proceso</a>
+ <a href="#turnos">Turnos</a>
  <a href="#faq">Preguntas</a>
  <a href="#contacto">Contacto</a>
  <a class="btn btn-solid" href="https://turnos.allitto.com/" target="_blank" rel="noopener">Agendar turno</a>
@@ -380,9 +400,35 @@ body.nav-lock{overflow:hidden;touch-action:none}
  </div>
 </section>
 
+
+<section id="turnos">
+ <div class="lead">Reservá tu evaluación sin idas y vueltas.</div>
+ <div class="book">
+  <div class="book-copy">
+   <h3>Agenda online con Easy!Appointments</h3>
+   <p>Elegí día y horario disponibles, dejá tus datos y recibí la confirmación. Si preferís hablar con alguien, también podés escribirnos por WhatsApp.</p>
+   <ul class="book-list">
+    <li><b>01</b><span>Elegí el servicio de evaluación de pisada.</span></li>
+    <li><b>02</b><span>Seleccioná fecha y horario disponibles en Belgrano.</span></li>
+    <li><b>03</b><span>Completá tus datos y confirmá el turno.</span></li>
+   </ul>
+  </div>
+  <div class="book-panel">
+   <div class="eyebrow">Turnos online</div>
+   <h3>Agendá en minutos</h3>
+   <p>Te llevamos al sistema de turnos de Equilibra para completar la reserva de forma segura.</p>
+   <div class="acts">
+    <a class="btn btn-solid" href="https://turnos.allitto.com/" target="_blank" rel="noopener">Ir a agendar turno</a>
+    <a class="btn" href="https://wa.me/5491135726305">WhatsApp</a>
+   </div>
+   <div class="book-note">turnos.allitto.com</div>
+  </div>
+ </div>
+</section>
+
 <section id="contacto">
- <h2>Agendá tu evaluación de pisada.</h2>
- <p>Reservá online en minutos. Atendemos en Belgrano, CABA, y estamos sumando Monte Castro y Mercedes, Buenos Aires.</p>
+ <h2>¿Preferís que te contactemos?</h2>
+ <p>También podés escribirnos por WhatsApp o email. Si querés reservar ahora, usá la agenda online.</p>
  <div class="trust">
   <div>
    <span class="ok">Sede confirmada</span>
@@ -603,7 +649,7 @@ function loop(){
 rs();requestAnimationFrame(loop);
 var io=new IntersectionObserver(function(es){es.forEach(function(e){
  if(e.isIntersecting){e.target.style.opacity=1;e.target.style.transform='none'}})},{threshold:.12});
-document.querySelectorAll('.card,.step,.lead,.pat>div,.svc-points article,.svc-chain div,.svc-main').forEach(function(el){
+document.querySelectorAll('.card,.step,.lead,.pat>div,.svc-points article,.svc-chain div,.svc-main,.book-copy,.book-panel,.book-list li').forEach(function(el){
  el.style.opacity=0;el.style.transform='translateY(16px)';
  el.style.transition='opacity .7s cubic-bezier(.22,1,.36,1),transform .7s cubic-bezier(.22,1,.36,1)';io.observe(el)});
 
