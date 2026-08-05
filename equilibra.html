@@ -41,7 +41,7 @@ nav a:hover{color:var(--ink)}
 .btn-solid{background:var(--green);border-color:var(--green);color:#fff}
 .btn-solid:hover{background:var(--ink);border-color:var(--ink)}
 @media(max-width:940px){nav{display:none}}
-#track{position:relative;height:900vh}
+#track{position:relative;height:760vh}
 #stage{position:sticky;top:0;height:100vh;overflow:hidden}
 #c{display:block;width:100%;height:100%}
 .caps{position:absolute;inset:0;pointer-events:none}
@@ -72,7 +72,7 @@ nav a:hover{color:var(--ink)}
 @keyframes hint-pulse{to{opacity:1}}
 @media (prefers-reduced-motion:reduce){.hint .chevron,.hint-label{animation:none}.hint .chevron{opacity:.55;transform:translateY(10px)}.hint .chevron:nth-child(2){transform:translateY(18px);opacity:.35}.hint .chevron:nth-child(3){transform:translateY(26px);opacity:.18}.hint-label{opacity:.7}}
 @media(max-width:860px){
- #track{height:760vh}
+ #track{height:560vh}
  #stage{display:flex;flex-direction:column}
  #c{height:56vh;flex:none}
  .cap{top:auto;bottom:5vh;transform:none;width:calc(100% - var(--pad)*2)}
@@ -436,11 +436,12 @@ function sg(p,a,b){return cl((p-a)/(b-a),0,1)}
 function mix(a,b,t){return a+(b-a)*t}
 var $=function(i){return document.getElementById(i)};
 
-var R=new THREE.WebGLRenderer({canvas:$('c'),antialias:true,alpha:true});
+var isMob0=matchMedia('(max-width:860px)').matches||matchMedia('(pointer:coarse)').matches;
+var R=new THREE.WebGLRenderer({canvas:$('c'),antialias:!isMob0,alpha:true,powerPreference:isMob0?'low-power':'high-performance'});
 R.setClearColor(0x000000,0);
-R.setPixelRatio(Math.min(devicePixelRatio,2));R.outputEncoding=THREE.sRGBEncoding;
+R.setPixelRatio(Math.min(devicePixelRatio,isMob0?1.25:1.75));R.outputEncoding=THREE.sRGBEncoding;
 R.toneMapping=THREE.ACESFilmicToneMapping;R.toneMappingExposure=1.0;
-R.shadowMap.enabled=true;R.shadowMap.type=THREE.PCFSoftShadowMap;
+R.shadowMap.enabled=!isMob0;R.shadowMap.type=THREE.PCFSoftShadowMap;
 var scene=new THREE.Scene();
 var cam=new THREE.PerspectiveCamera(32,1,.05,60);
 
@@ -497,7 +498,7 @@ var mapMesh=new THREE.Mesh(gMap,mMap);mapMesh.renderOrder=2;capa1.add(mapMesh);
 var TOTIDX=iUp.count;
 
 var grp=new THREE.Group();grp.add(capa1);grp.add(capa2);
-grp.traverse(function(o){if(o.isMesh){o.castShadow=true;o.receiveShadow=true;o.frustumCulled=false}});
+grp.traverse(function(o){if(o.isMesh){o.castShadow=!isMob0;o.receiveShadow=!isMob0;o.frustumCulled=true}});
 var bb=new THREE.Box3().setFromObject(grp),ctr=bb.getCenter(new THREE.Vector3()),sz=bb.getSize(new THREE.Vector3());
 capa1.position.sub(ctr);capa2.position.sub(ctr);
 var C1=capa1.position.clone(),C2=capa2.position.clone(),HX=sz.x/2,HY=sz.y/2,HZ=sz.z/2;
@@ -513,7 +514,7 @@ bar.rotation.x=-Math.PI/2;bar.renderOrder=5;pivot.add(bar);
 var piso=new THREE.Mesh(new THREE.PlaneGeometry(60,60),new THREE.ShadowMaterial({opacity:.2}));
 piso.rotation.x=-Math.PI/2;piso.receiveShadow=true;scene.add(piso);
 var key=new THREE.DirectionalLight(0xfff4e6,2.1);key.position.set(-3.5,5.5,2.6);
-key.castShadow=true;key.shadow.mapSize.set(2048,2048);key.shadow.radius=3;
+key.castShadow=!isMob0;key.shadow.mapSize.set(isMob0?512:1024,isMob0?512:1024);key.shadow.radius=isMob0?1:2;
 var dd=2.8,sc=key.shadow.camera;sc.left=-dd;sc.right=dd;sc.top=dd;sc.bottom=-dd;sc.near=.5;sc.far=18;
 scene.add(key);
 var rim=new THREE.DirectionalLight(0xffeede,.5);rim.position.set(4,1.6,-3.6);scene.add(rim);
@@ -543,10 +544,19 @@ function fitBig(){
 if(document.fonts&&document.fonts.ready)document.fonts.ready.then(fitBig);
 addEventListener('load',fitBig);
 function rs(){mob=innerWidth<=860;fitBig();var h=mob?innerHeight*0.56:innerHeight;
+ R.setPixelRatio(Math.min(devicePixelRatio,mob?1.25:1.75));
+ R.shadowMap.enabled=!mob; if(typeof key!=='undefined'&&key){key.castShadow=!mob;}
  R.setSize(innerWidth,h,false);cam.aspect=innerWidth/h;cam.updateProjectionMatrix()}
 addEventListener('resize',rs);
 
+var stageVis=true,pageVis=!document.hidden;
+if('IntersectionObserver' in window){
+ new IntersectionObserver(function(es){stageVis=!!(es[0]&&es[0].isIntersecting);},{threshold:0.01})
+ .observe(document.getElementById('stage')||tr);
+}
+document.addEventListener('visibilitychange',function(){pageVis=!document.hidden});
 function loop(){
+ if(!pageVis||!stageVis){requestAnimationFrame(loop);return;}
  var r=tr.getBoundingClientRect();
  tgt=cl(-r.top/(tr.offsetHeight-innerHeight),0,1);
  cur=red?tgt:cur+(tgt-cur)*.085;
