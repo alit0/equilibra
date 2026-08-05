@@ -3,8 +3,19 @@
 <link rel="icon" href="logo.ico" sizes="any">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="icon" type="image/svg+xml" href="iso.svg">
-<title>EQUILIBRA — Estudio de biomecánica podal</title>
-<meta name="description" content="Baropodometría digital, plantillas 100% a medida y estudio digital de marcha en Buenos Aires.">
+<title>Equilibra · Biomecánica podal y plantillas a medida</title>
+<meta name="description" content="Estudio de biomecánica podal en Belgrano, CABA. Baropodometría digital y plantillas 100% a medida, diseñadas desde tu pisada.">
+<link rel="canonical" href="https://soyequilibra.com.ar/">
+<meta name="robots" content="index, follow">
+<meta property="og:title" content="Equilibra · Biomecánica podal y plantillas a medida">
+<meta property="og:description" content="Estudio de biomecánica podal en Belgrano, CABA. Baropodometría digital y plantillas 100% a medida, diseñadas desde tu pisada.">
+<meta property="og:url" content="https://soyequilibra.com.ar/">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="es_AR">
+<meta property="og:site_name" content="Equilibra">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Equilibra · Biomecánica podal y plantillas a medida">
+<meta name="twitter:description" content="Estudio de biomecánica podal en Belgrano, CABA. Baropodometría digital y plantillas 100% a medida, diseñadas desde tu pisada.">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;800&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
 <style>
@@ -46,7 +57,7 @@ nav a:hover{color:var(--ink)}
 #c{display:block;width:100%;height:100%}
 .caps{position:absolute;inset:0;pointer-events:none}
 .cap{position:absolute;left:var(--pad);top:50%;transform:translateY(-50%);width:min(40vw,470px);opacity:0;visibility:hidden;will-change:opacity,transform}
-.cap h1{font-size:clamp(42px,5.6vw,80px)}
+.cap h1{font-size:clamp(34px,3.4vw,46px);max-width:18ch}
 .cap h2{font-size:clamp(32px,4.2vw,58px)}
 .cap p{color:var(--ink2);margin-top:18px;max-width:40ch;font-size:clamp(14px,1.05vw,16.5px)}
 .tags{display:flex;flex-wrap:wrap;gap:7px;margin-top:24px}
@@ -76,7 +87,7 @@ nav a:hover{color:var(--ink)}
  #stage{display:flex;flex-direction:column}
  #c{height:56vh;flex:none}
  .cap{top:auto;bottom:5vh;transform:none;width:calc(100% - var(--pad)*2)}
- .cap h1{font-size:clamp(34px,9vw,50px)}.cap h2{font-size:clamp(28px,7.6vw,42px)}
+ .cap h1{font-size:clamp(26px,7vw,38px);line-height:1.05;max-width:20ch}.cap h2{font-size:clamp(28px,7.6vw,42px)}
  .cap p{margin-top:12px;font-size:14.5px}.read{margin-top:14px}.read b{font-size:15px}
  .rail{display:none}
  .hint{display:flex;left:50%;bottom:auto;top:58vh;transform:translateX(-50%);gap:8px;transition:opacity .28s ease,visibility .28s ease}
@@ -270,7 +281,10 @@ body.nav-lock{overflow:hidden;touch-action:none}
   .nav-drawer{display:none!important}
   header.nav-open .nav-drawer{display:none!important}
 }
-</style></head><body>
+</style>
+<!--BUILD:JSONLD_START-->
+<!--BUILD:JSONLD_END-->
+</head><body>
 <header id="hd"><a class="brand" href="#top" aria-label="Equilibra inicio"><img class="brand-logo" src="logo_horizontal.svg" alt="Equilibra" width="168" height="34" decoding="async"><img class="brand-logo-iso" src="iso.svg" alt="Equilibra" width="36" height="36" decoding="async"></a>
 <nav class="nav-desktop" aria-label="Principal"><a href="#servicios">Servicios</a><a href="#deportes">Deportes</a><a href="#proceso">Proceso</a><a href="#turnos">Turnos</a><a href="#faq">Preguntas</a></nav>
 <a class="btn btn-header" href="https://turnos.allitto.com/" target="_blank" rel="noopener">Agendar</a>
@@ -287,11 +301,12 @@ body.nav-lock{overflow:hidden;touch-action:none}
 </div>
 </header>
 <div id="track"><div id="stage">
-<div class="behind"><h1 class="bigtype" id="bt"><span class="bigline">El movimiento</span><br><span class="bigline">vuelve a ser tuyo</span></h1></div>
+<div class="behind"><p class="bigtype" id="bt" role="presentation" aria-hidden="true"><span class="bigline">El movimiento</span><br><span class="bigline">vuelve a ser tuyo</span></p></div>
 <canvas id="c"></canvas>
 <div class="caps">
 <div class="cap" id="k0">
  <div class="eyebrow">Estudio de biomecánica podal</div>
+ <h1>Equilibra es un estudio de biomecánica podal en Belgrano, Buenos Aires.</h1>
  <p>Estudiamos tu pisada con tecnología digital y fabricamos plantillas 100% a tu medida.</p>
  <a class="btn btn-solid" href="https://turnos.allitto.com/" target="_blank" rel="noopener">Agendá tu evaluación</a>
  <div class="tags"><span>Baropodometría</span><span>Plantillas a medida</span><span>Estudio de marcha</span></div>
@@ -330,7 +345,7 @@ body.nav-lock{overflow:hidden;touch-action:none}
 </div></div>
 
 <section id=servicios>
- <div class=lead>Primero medimos cómo pisás. Después proponemos la corrección.</div>
+ <h2 class=lead>Primero medimos cómo pisás. Después proponemos la corrección.</h2>
  <div class=svc>
   <div class=svc-main>
    <h3>Evaluación biomecánica de la pisada</h3>
@@ -344,17 +359,17 @@ body.nav-lock{overflow:hidden;touch-action:none}
   <div class=svc-points>
    <article>
     <span>Medición</span>
-    <h4>Baropodometría digital</h4>
+    <h3>Baropodometría digital</h3>
     <p>Diagnóstico visual de los puntos de mayor y menor presión, en apoyo y en marcha.</p>
    </article>
    <article>
     <span>Solución</span>
-    <h4>Plantillas 100% a medida</h4>
+    <h3>Plantillas 100% a medida</h3>
     <p>Diseñadas desde tu estudio, con goma EVA y resina termo-moldeable según lo que tu pisada necesite.</p>
    </article>
    <article>
     <span>Seguimiento</span>
-    <h4>Ajuste y control</h4>
+    <h3>Ajuste y control</h3>
     <p>Período de prueba de 15 días. Si hace falta, corregimos sin cargo dentro de la garantía.</p>
    </article>
   </div>
@@ -363,30 +378,31 @@ body.nav-lock{overflow:hidden;touch-action:none}
 
 <section id="deportes">
  <div class="eyebrow">Para tu deporte</div>
- <div class="lead">No carga igual el pie quien corre que quien frena.</div>
+ <h2 class="lead">No carga igual el pie quien corre que quien frena.</h2>
  <div class="pat">
-  <div><b>Impacto repetitivo</b><h4>Running, trail, triatlón</h4><p>Miles de impactos por sesión sobre el mismo eje. La plantilla trabaja sobre la absorción y el sostén del arco durante todo el ciclo.</p></div>
-  <div><b>Desplazamiento lateral</b><h4>Tenis, pádel, básquet, fútbol</h4><p>Frenadas, cambios de dirección y apoyos fuera del eje. Acá el trabajo es estabilizar el retropié ante cargas horizontales.</p></div>
-  <div><b>Fuerza sin impacto</b><h4>Ciclismo</h4><p>No hay impacto, hay transmisión continua de fuerza al pedal. La plantilla busca alinear el apoyo y bajar la tensión en la rodilla.</p></div>
-  <div><b>Carga continua</b><h4>Senderismo y trabajo de pie</h4><p>Ocho horas sobre el mismo apoyo. El objetivo es el sostén sostenido en el tiempo y evitar la fatiga del arco.</p></div>
+  <div><b>Impacto repetitivo</b><h3>Running, trail, triatlón</h3><p>Miles de impactos por sesión sobre el mismo eje. La plantilla trabaja sobre la absorción y el sostén del arco durante todo el ciclo.</p></div>
+  <div><b>Desplazamiento lateral</b><h3>Tenis, pádel, básquet, fútbol</h3><p>Frenadas, cambios de dirección y apoyos fuera del eje. Acá el trabajo es estabilizar el retropié ante cargas horizontales.</p></div>
+  <div><b>Fuerza sin impacto</b><h3>Ciclismo</h3><p>No hay impacto, hay transmisión continua de fuerza al pedal. La plantilla busca alinear el apoyo y bajar la tensión en la rodilla.</p></div>
+  <div><b>Carga continua</b><h3>Senderismo y trabajo de pie</h3><p>Ocho horas sobre el mismo apoyo. El objetivo es el sostén sostenido en el tiempo y evitar la fatiga del arco.</p></div>
  </div>
 </section>
 
 <section id="proceso">
  <div class="eyebrow">Cómo trabajamos</div>
- <div class="lead">Cuatro pasos. El estudio se hace en una sola visita.</div>
+ <h2 class="lead">Cuatro pasos. El estudio se hace en una sola visita.</h2>
  <div class="steps">
-  <div class="step"><b>Paso 01</b><h4>Escaneo</h4><p>Medimos tu apoyo estático y dinámico sobre la plataforma digital.</p></div>
-  <div class="step"><b>Paso 02</b><h4>Diagnóstico</h4><p>Te mostramos el mapa de presiones y explicamos qué hay que corregir.</p></div>
-  <div class="step"><b>Paso 03</b><h4>Fabricación</h4><p>Se diseñan a tu anatomía y al calzado que vas a usar.</p></div>
-  <div class="step"><b>Paso 04</b><h4>Control</h4><p>Nos volvemos a ver para verificar la adaptación y ajustar si hace falta.</p></div>
+  <div class="step"><b>Paso 01</b><h3>Escaneo</h3><p>Medimos tu apoyo estático y dinámico sobre la plataforma digital.</p></div>
+  <div class="step"><b>Paso 02</b><h3>Diagnóstico</h3><p>Te mostramos el mapa de presiones y explicamos qué hay que corregir.</p></div>
+  <div class="step"><b>Paso 03</b><h3>Fabricación</h3><p>Se diseñan a tu anatomía y al calzado que vas a usar.</p></div>
+  <div class="step"><b>Paso 04</b><h3>Control</h3><p>Nos volvemos a ver para verificar la adaptación y ajustar si hace falta.</p></div>
  </div>
 </section>
 
 <section id="faq">
  <div class="eyebrow">Preguntas frecuentes</div>
- <div class="lead">Lo que casi todos preguntan antes de venir.</div>
- <div class="faq">
+ <h2 class="lead">Lo que casi todos preguntan antes de venir.</h2>
+ <!--BUILD:FAQ_HTML_START-->
+<div class="faq">
   <details><summary>¿Qué es la baropodometría?</summary><p>Es un estudio digital de la pisada. No es solo una foto de la planta: muestra cómo se distribuyen las presiones cuando estás quieto y, cuando corresponde, también mientras caminás. Con ese mapa decidimos si hace falta plantilla y cómo diseñarla.</p></details>
   <details><summary>¿Es lo mismo que la prueba de una casa de deportes?</summary><p>No. En muchos locales deportivos se hace una prueba simple para recomendar zapatillas. En Equilibra el enfoque es de salud: medimos tu mapa de presiones y, si corresponde, fabricamos una plantilla personalizada.</p></details>
   <details><summary>¿Me van a doler los primeros días?</summary><p>Molestar un poco, puede. Doler, no es lo esperable. Tu pie viene apoyando de una forma hace años y la plantilla le propone otra. Hay un período de prueba de 15 días: si no se adapta bien, coordinamos un ajuste sin cargo.</p></details>
@@ -400,11 +416,12 @@ body.nav-lock{overflow:hidden;touch-action:none}
   <details><summary>¿Necesito una derivación médica?</summary><p>No hace falta para el estudio. Si el diagnóstico muestra algo que excede lo biomecánico, te orientamos y, si corresponde, te derivamos.</p></details>
   <details><summary>¿Y si ya tengo plantillas?</summary><p>Traelas. Ver cómo están gastadas y cómo responde tu pisada con ellas puestas es información valiosa para el estudio.</p></details>
  </div>
+<!--BUILD:FAQ_HTML_END-->
 </section>
 
 
 <section id="turnos">
- <div class="lead">Reservá tu evaluación sin idas y vueltas.</div>
+ <h2 class="lead">Reservá tu evaluación sin idas y vueltas.</h2>
  <div class="book">
   <div class="book-copy">
    <h3>Agenda online de Equilibra</h3>

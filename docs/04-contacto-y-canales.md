@@ -8,14 +8,14 @@
 | **Web** | https://soyequilibra.com.ar | Confirmado |
 | **Email** | soyequilibra@gmail.com | Confirmado |
 | **Logo** | `isologo.png` / `logo-trANSPARENCIA.png` | En carpeta del proyecto |
-| **WhatsApp** | _Pendiente de definir / confirmar_ | No publicar número viejo |
+| **WhatsApp** | +54 9 11 3572-6305 | Confirmado (wa.me/5491135726305) |
 | **Instagram** | _Pendiente de handle Equilibra_ | No reutilizar handle anterior |
 | **Facebook** | _Pendiente_ | No reutilizar página anterior |
 | **Teléfono alternativo** | _Pendiente_ | — |
 
 ## Cómo priorizar la atención
 
-1. **WhatsApp** — canal principal para turnos y consultas rápidas (cuando esté definido)
+1. **WhatsApp** — canal principal para turnos y consultas rápidas (+54 9 11 3572-6305)
 2. **Email** — soyequilibra@gmail.com para consultas formales, envíos y administración
 3. **Web** — soyequilibra.com.ar como home de confianza y captura de consultas
 4. **Redes** — contenido educativo + CTA a agenda
@@ -74,7 +74,7 @@ Contame qué molestia tenés o en qué zona te queda mejor y te ayudo a coordina
 
 ## Pendientes de cierre con el dueño
 
-- [ ] Número de WhatsApp de Equilibra
+- [x] Número de WhatsApp de Equilibra (+54 9 11 3572-6305)
 - [ ] Usuario de Instagram
 - [ ] Página o presencia en Facebook (si aplica)
 - [ ] Teléfono de línea o solo WhatsApp
