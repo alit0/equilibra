@@ -343,6 +343,16 @@ nav.nav-desktop a:hover{color:var(--ink)}
 }
 section{padding:clamp(76px,10vw,150px) var(--pad);border-top:1px solid var(--line)}
 .lead{font-family:var(--disp);font-weight:600;font-size:clamp(25px,3.2vw,42px);letter-spacing:-.03em;line-height:1.1;max-width:21ch}
+/* Centred section headings, desktop only. Scoped to direct children of <section>:
+   .eyebrow is also used by the hero captions, which stay left-aligned. The body
+   copy and grids below keep their left alignment — centred running text reads worse. */
+@media(min-width:941px){
+ section>.lead{margin-inline:auto;text-align:center}
+ /* the eyebrow's single trailing rule would look lopsided once centred, so it
+    gains a matching one on the left */
+ section>.eyebrow{justify-content:center}
+ section>.eyebrow::before{content:"";height:1px;flex:1;max-width:56px;background:var(--line)}
+}
 .g3{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border:1px solid var(--line);margin-top:clamp(40px,5vw,72px)}
 .card{background:var(--cream);padding:clamp(24px,2.8vw,40px);min-height:250px;display:flex;flex-direction:column}
 .card .n{font-family:var(--label);font-size:11px;letter-spacing:.2em;color:var(--green)}
