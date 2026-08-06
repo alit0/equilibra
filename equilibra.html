@@ -1,5 +1,8 @@
 <!DOCTYPE html><html lang="es"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<!-- viewport-fit=cover is what makes env(safe-area-inset-*) report real values on
+     iOS. Without it Safari letterboxes the page inside the safe area and every
+     inset reads 0, so the bottom bar's clearance work never engages. -->
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <link rel="icon" href="logo.ico" sizes="any">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="icon" type="image/svg+xml" href="iso.svg">
@@ -27,12 +30,18 @@
  /* Small uppercase UI labels: eyebrows, buttons, tags, nav, footer. Named for the
     role, not the face — it used to be IBM Plex Mono. */
  --label:'IBM Plex Sans',system-ui,sans-serif;
- --pad:clamp(20px,5vw,76px); --bigtype:#EDAF78; --big:'Anton',var(--disp);
+ /* Side padding never narrower than the device inset. In landscape on a notched
+    phone the inset (~47px) exceeds the 5vw this would otherwise resolve to, and
+    copy would run under the notch. In portrait both insets are 0 and nothing moves. */
+ --pad:max(clamp(20px,5vw,76px),env(safe-area-inset-left,0px),env(safe-area-inset-right,0px));
+ --bigtype:#EDAF78; --big:'Anton',var(--disp);
  /* Bottom-bar clearance. --safeb is the device inset (home indicator, gesture bar).
     --navh is the full height anything fixed to the bottom must clear; it stays 0
     wherever .bottom-nav is not rendered, and a script below overwrites it with the
     measured height so no layout depends on a hardcoded bar size. */
  --safeb:env(safe-area-inset-bottom,0px);
+ /* Top inset, needed once viewport-fit=cover lets content slide under the notch. */
+ --safet:env(safe-area-inset-top,0px);
  --navh:0px;
  /* Symmetric in-out, for travel between two known positions. */
  --ease-slide:cubic-bezier(.65,0,.35,1);
@@ -55,7 +64,9 @@ h1,h2,h3{font-family:var(--disp);font-weight:800;letter-spacing:-.038em;line-hei
 p{margin:0}a{color:inherit;text-decoration:none}
 .eyebrow{font-family:var(--label);font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--green);display:flex;align-items:center;gap:10px;margin-bottom:20px}
 .eyebrow::after{content:"";height:1px;flex:1;max-width:56px;background:var(--line)}
-header{position:fixed;inset:0 0 auto 0;z-index:60;display:flex;align-items:center;justify-content:space-between;padding:16px var(--pad);pointer-events:none;transition:background .3s,box-shadow .3s}
+/* Top padding carries the notch inset: with viewport-fit=cover the header sits
+   under the status bar, so its content has to be pushed clear of it. */
+header{position:fixed;inset:0 0 auto 0;z-index:60;display:flex;align-items:center;justify-content:space-between;padding:calc(16px + var(--safet)) var(--pad) 16px;pointer-events:none;transition:background .3s,box-shadow .3s}
 header.solid{
  background:var(--header-bg);
  /* brightness above 1 here: this pane is pale, so it catches light instead of
