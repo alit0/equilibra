@@ -380,6 +380,21 @@ section{padding:clamp(76px,10vw,150px) var(--pad);border-top:1px solid var(--lin
 .pat p{color:var(--ink2);font-size:14.5px}
 .steps{display:grid;grid-template-columns:repeat(4,1fr);gap:26px;margin-top:52px}
 .step{border-top:1px solid var(--ink);padding-top:16px}
+/* The rule stays at the top of the card so all four align; the picture sits under
+   it. Square files cropped to 4:3 by object-fit — a square would render 304px tall
+   in a four-column row, far too much vertical weight for a step card. */
+.step-img{
+ display:block;
+ width:100%;
+ /* height:auto is required — the height="800" attribute is a presentational hint
+    that pins the box, and aspect-ratio only applies when one axis is auto. */
+ height:auto;
+ aspect-ratio:4/3;
+ object-fit:cover;
+ /* holds the space in the site's own tone while the file loads */
+ background:var(--paper);
+ margin-bottom:18px;
+}
 .step b{font-family:var(--label);font-size:10.5px;letter-spacing:.2em;color:var(--ink3);display:block;margin-bottom:10px}
 .step h4{font-family:var(--disp);font-weight:600;font-size:18px;letter-spacing:-.02em;margin:0 0 6px}
 .step p{color:var(--ink2);font-size:14px}
@@ -621,10 +636,31 @@ footer{padding:34px var(--pad);border-top:1px solid var(--line);display:flex;jus
  <div class="eyebrow">Cómo trabajamos</div>
  <h2 class="lead">Cuatro pasos. El estudio se hace en una sola visita.</h2>
  <div class="steps">
-  <div class="step"><b>Paso 01</b><h3>Escaneo</h3><p>Medimos tu apoyo estático y dinámico sobre la plataforma digital.</p></div>
-  <div class="step"><b>Paso 02</b><h3>Diagnóstico</h3><p>Te mostramos el mapa de presiones y explicamos qué hay que corregir.</p></div>
-  <div class="step"><b>Paso 03</b><h3>Fabricación</h3><p>Se diseñan a tu anatomía y al calzado que vas a usar.</p></div>
-  <div class="step"><b>Paso 04</b><h3>Control</h3><p>Nos volvemos a ver para verificar la adaptación y ajustar si hace falta.</p></div>
+  <!-- Files are square; the 4:3 crop is done in CSS so the framing can be changed
+       without re-encoding. width/height are the real file dimensions — the inline
+       stylesheet applies before paint, so aspect-ratio reserves the right box.
+       alt describes the picture, not the step: the heading and copy below already
+       say what the step is, and repeating it only adds noise for screen readers. -->
+  <div class="step">
+   <img class="step-img" src="img/pasos/paso-01.webp" width="800" height="800" loading="lazy" decoding="async"
+        alt="Pies descalzos apoyados sobre la plataforma digital de baropodometría.">
+   <b>Paso 01</b><h3>Escaneo</h3><p>Medimos tu apoyo estático y dinámico sobre la plataforma digital.</p>
+  </div>
+  <div class="step">
+   <img class="step-img" src="img/pasos/paso-02.webp" width="800" height="800" loading="lazy" decoding="async"
+        alt="Un profesional señala el mapa de presiones del pie en la pantalla.">
+   <b>Paso 02</b><h3>Diagnóstico</h3><p>Te mostramos el mapa de presiones y explicamos qué hay que corregir.</p>
+  </div>
+  <div class="step">
+   <img class="step-img" src="img/pasos/paso-03.webp" width="800" height="800" loading="lazy" decoding="async"
+        alt="Manos trabajando el canto de una plantilla sobre la mesa de taller.">
+   <b>Paso 03</b><h3>Fabricación</h3><p>Se diseñan a tu anatomía y al calzado que vas a usar.</p>
+  </div>
+  <div class="step">
+   <img class="step-img" src="img/pasos/paso-04.webp" width="800" height="800" loading="lazy" decoding="async"
+        alt="Colocando la plantilla terminada dentro de una zapatilla.">
+   <b>Paso 04</b><h3>Control</h3><p>Nos volvemos a ver para verificar la adaptación y ajustar si hace falta.</p>
+  </div>
  </div>
 </section>
 
