@@ -156,7 +156,11 @@ nav.nav-desktop a:hover{color:var(--ink)}
   z-index:1;
   border-radius:999px;
   background:var(--navbar-pill);
-  border:1px solid rgba(255,255,255,.20);
+  /* Opaque ring, not a translucent one. Fill contrast cannot satisfy WCAG 1.4.11
+     here: the bar is glass, so its colour follows whatever scrolls behind it and
+     the pill/bar ratio swings from 2.55 to 1.86 down the page. An opaque boundary
+     is backdrop-independent, so it holds the same ratio everywhere. */
+  border:1.5px solid #fff;
   /* Its own rim light, so the lozenge reads as glass sitting in glass rather
      than a flat sticker on top of it. */
   box-shadow:
@@ -211,8 +215,9 @@ nav.nav-desktop a:hover{color:var(--ink)}
  .bottom-nav svg.nav-ico-foot{
   fill:currentColor;
   stroke:none;
-  width:24px;
-  height:24px;
+  /* same box as the others now that its viewBox carries the margin */
+  width:22px;
+  height:22px;
  }
 
  .bottom-nav a span{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -422,7 +427,10 @@ footer{padding:34px var(--pad);border-top:1px solid var(--line);display:flex;jus
  </a>
  <a href="#servicios">
   <!-- user's footprint icon -->
-  <svg class="nav-ico-foot" viewBox="0 0 512 512" aria-hidden="true">
+  <!-- viewBox padded rather than the CSS box shrunk: the artwork filled 100% of
+       its box while the stroked icons fill ~70% of theirs, so at equal CSS size
+       it read twice as heavy. The margin equalises the fill and keeps the detail. -->
+  <svg class="nav-ico-foot" viewBox="-100 -100 712 712" aria-hidden="true">
    <g transform="translate(0,512) scale(0.1,-0.1)" fill="currentColor" stroke="none">
     <path d="M1583 5106 c-97 -31 -190 -111 -250 -213 -13 -24 -29 -43 -33 -43 -4 0 -32 11 -62 25 -104 49 -229 28 -318 -52 -55 -50 -75 -80 -85 -133 l-6 -35 -56 3 c-71 5 -127 -11 -184 -53 -49 -35 -89 -102 -89 -148 0 -24 -4 -27 -32 -27 -59 0 -109 -21 -155 -63 -52 -48 -83 -103 -92 -165 -6 -42 -9 -46 -46 -59 -176 -58 -232 -311 -105 -472 81 -103 185 -130 237 -62 28 37 -4 121 -46 121 -22 0 -76 56 -90 93 -19 50 -13 103 15 136 32 39 63 40 88 3 37 -56 82 -77 162 -77 63 0 76 3 98 24 32 30 35 82 6 111 -15 15 -33 20 -75 20 -50 0 -56 2 -70 30 -35 67 -6 182 48 196 56 14 79 2 115 -59 46 -79 95 -110 181 -115 56 -3 70 -1 94 18 21 17 27 30 27 60 0 51 -35 80 -96 80 -38 0 -46 4 -70 36 -21 27 -29 50 -32 95 -5 72 12 104 64 118 59 16 98 -6 128 -73 70 -158 178 -226 295 -185 36 13 51 35 51 76 -1 49 -51 89 -98 76 -55 -14 -112 80 -112 184 0 116 36 163 127 163 44 0 58 -5 87 -31 33 -29 76 -117 76 -157 0 -35 58 -138 98 -174 80 -72 191 -111 317 -112 155 0 232 69 281 254 54 207 31 396 -60 498 -72 79 -231 122 -333 88z m163 -165 c85 -39 115 -123 95 -267 -22 -154 -62 -228 -133 -243 -83 -18 -218 38 -252 104 -25 48 -33 157 -16 209 20 61 88 153 137 185 55 37 107 40 169 12z"/>
     <path d="M3335 5099 c-151 -53 -217 -160 -217 -354 1 -179 44 -324 122 -409 51 -55 92 -70 190 -70 134 1 259 52 335 136 42 47 55 75 89 200 11 39 29 70 55 98 35 37 42 40 94 40 45 0 61 -5 86 -25 95 -81 33 -348 -75 -321 -28 7 -79 -16 -88 -39 -13 -35 -6 -72 20 -96 21 -20 36 -24 87 -24 102 0 177 60 228 180 24 57 59 85 105 85 61 0 94 -36 94 -102 0 -88 -43 -148 -105 -148 -60 0 -95 -29 -95 -80 0 -30 6 -43 28 -60 23 -19 37 -21 93 -18 86 5 135 36 182 115 35 61 48 69 103 58 65 -12 97 -121 59 -195 -14 -28 -20 -30 -70 -30 -42 0 -60 -5 -75 -20 -26 -26 -27 -83 -1 -109 26 -26 90 -43 132 -35 50 9 115 50 136 84 20 35 41 38 76 10 30 -24 42 -73 33 -126 -8 -40 -69 -114 -95 -114 -26 0 -61 -43 -61 -74 0 -36 49 -86 85 -86 64 0 156 75 203 165 22 43 26 63 27 140 0 79 -3 96 -27 141 -34 65 -87 111 -144 126 -42 11 -44 14 -44 48 0 113 -125 239 -237 240 -39 0 -43 2 -43 25 0 109 -125 208 -262 208 l-66 0 -11 41 c-20 79 -105 161 -195 186 -63 17 -162 9 -214 -18 -23 -12 -47 -22 -51 -22 -5 0 -21 20 -35 44 -106 180 -287 263 -451 205z m203 -166 c50 -34 97 -92 128 -158 33 -70 33 -174 1 -236 -32 -60 -112 -102 -206 -107 -61 -4 -70 -2 -98 22 -40 34 -68 108 -84 220 -20 144 10 228 95 267 60 27 115 24 164 -8z"/>
