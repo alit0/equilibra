@@ -167,17 +167,22 @@ nav.nav-desktop a:hover{color:var(--ink)}
   z-index:1;
   border-radius:999px;
   background:var(--navbar-pill);
-  /* Opaque ring, not a translucent one. Fill contrast cannot satisfy WCAG 1.4.11
-     here: the bar is glass, so its colour follows whatever scrolls behind it and
-     the pill/bar ratio swings from 2.55 to 1.86 down the page. An opaque boundary
-     is backdrop-independent, so it holds the same ratio everywhere. */
-  border:1.5px solid #fff;
-  /* Its own rim light, so the lozenge reads as glass sitting in glass rather
-     than a flat sticker on top of it. */
+  /* Hairline, opaque, in the page's own cream rather than pure white. Fill contrast
+     cannot satisfy WCAG 1.4.11 here — the bar is glass, so its colour follows
+     whatever scrolls behind it and the pill/bar ratio swings from 2.55 to 1.77 down
+     the page. An opaque edge is backdrop-independent and holds everywhere.
+     1px, not 1.5: the criterion measures contrast, not thickness, and 1.5px lands
+     as 4.5 device pixels at DPR3 — heavy enough to read as a border rather than
+     as light catching the rim. */
+  border:1px solid var(--cream);
+  /* Softens the hairline into an edge highlight: a faint inner glow just inside
+     the border, and a contact shadow underneath so the lozenge sits in the bar
+     instead of being outlined on top of it. */
   box-shadow:
-   inset 0 1px 0 rgba(255,255,255,.30),
-   inset 0 -2px 6px rgba(20,17,12,.18),
-   0 2px 8px rgba(11,90,45,.35);
+   inset 0 0 0 1px rgba(244,231,212,.16),
+   inset 0 6px 12px -6px rgba(255,255,255,.22),
+   inset 0 -2px 6px rgba(20,17,12,.16),
+   0 1px 3px rgba(20,17,12,.30);
   pointer-events:none;
   transition:none;
  }
