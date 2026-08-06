@@ -6,3 +6,8 @@ dist/
 .atl/
 .kilo/
 openspec/
+
+# Working assets kept at hand but not used by the site
+final_footprint.svg
+foot.jpg
+orthopedist_10450418.png
