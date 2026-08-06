@@ -1,9 +1,14 @@
 #!/usr/bin/env python3
-"""Add BUILD markers to the equilibra.html template for the PR #2 build pipeline."""
+"""Add BUILD markers to the template for the PR #2 build pipeline.
+
+One-shot migration: the markers it inserts are already present in the template,
+so a second run exits on the sanity check below. Kept for the record.
+"""
 import sys
 from pathlib import Path
 
-HTML_PATH = Path(r"C:\Users\Ale\Proyectos\Equilibra\equilibra\equilibra.html")
+# Resolved from this file rather than hardcoded to one machine's absolute path.
+HTML_PATH = Path(__file__).resolve().parent.parent / "src" / "template.html"
 
 content = HTML_PATH.read_text(encoding="utf-8")
 

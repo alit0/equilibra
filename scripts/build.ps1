@@ -7,7 +7,7 @@
     Reads:
         content/site.json    (canonical SEO/entity values)
         content/faqs.json    (approved FAQ Q&A)
-        equilibra.html       (sole HTML template with BUILD markers)
+        src/template.html    (sole HTML template with BUILD markers)
         tracked asset files  (svg, png, ico, apple-touch-icon)
     Writes:
         dist/index.html
@@ -24,7 +24,7 @@
         - FAQ schema text mismatch (visible HTML vs JSON-LD)
         - any og:image/twitter:image while content/site.json og_image is null
         - a populated og_image but the referenced asset does not exist
-        - forbidden dist files (equilibra.html duplicate, dead assets)
+        - forbidden dist files (the template itself, dead assets)
 #>
 
 [CmdletBinding()]
@@ -64,7 +64,7 @@ function Get-Sha256Hex {
 }
 
 # 1. Validate inputs
-$templatePath = Join-Path $SourceRoot 'equilibra.html'
+$templatePath = Join-Path $SourceRoot 'src/template.html'
 $siteJsonPath = Join-Path $SourceRoot 'content/site.json'
 $faqsJsonPath = Join-Path $SourceRoot 'content/faqs.json'
 foreach ($p in @($templatePath, $siteJsonPath, $faqsJsonPath)) {
@@ -302,7 +302,10 @@ foreach ($rel in $referenced) {
     Copy-Item -LiteralPath $srcPath -Destination $destPath -Force
     $copiedFiles.Add([pscustomobject]@{ Rel = $rel; Size = (Get-Item -LiteralPath $destPath).Length })
 }
-$forbidden = @('isologo.png', 'logo-trANSPARENCIA.png', 'equilibra.html')
+# equilibra.html is kept in the list on purpose: the template used to live at the
+# repo root under that name and a past deploy published it. The guard costs nothing
+# and still catches a stale copy reappearing.
+$forbidden = @('isologo.png', 'logo-trANSPARENCIA.png', 'equilibra.html', 'template.html')
 foreach ($f in $forbidden) {
     $p = Join-Path $DistRoot $f
     if (Test-Path -LiteralPath $p) { Fail-Build "Forbidden file present in dist/: $f" }

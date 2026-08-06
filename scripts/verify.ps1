@@ -10,7 +10,7 @@
         - Exactly one canonical/title/description in dist/index.html
         - FAQ HTML <-> JSON-LD parity (visible answer text == schema text)
         - dist/index.html, dist/robots.txt, dist/sitemap.xml exist
-        - No dist/equilibra.html, no dead assets
+        - No copy of the template in dist/, no dead assets
         - No og:image / twitter:image while content/site.json og_image is null
         - Asset references in dist/index.html resolve to existing files
 
@@ -96,7 +96,7 @@ foreach ($f in @('index.html','robots.txt','sitemap.xml','checksums.sha256','bui
 Write-Ok "Required dist files present."
 
 # 3. Forbidden dist files
-foreach ($f in @('equilibra.html','isologo.png','logo-trANSPARENCIA.png')) {
+foreach ($f in @('equilibra.html','template.html','isologo.png','logo-trANSPARENCIA.png')) {
     $p = Join-Path $DistRoot $f
     if (Test-Path -LiteralPath $p) { Fail-Verify "Forbidden dist file present: $f" }
 }
