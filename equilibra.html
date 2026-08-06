@@ -412,6 +412,20 @@ details p{color:var(--ink2);margin-top:12px;max-width:70ch;font-size:15px}
 .trust .ok{color:var(--green)}
 .trust .soon{color:var(--ember)}
 .acts{display:flex;gap:12px;justify-content:center;margin-top:34px;flex-wrap:wrap}
+/* A mailto: is a dead click for anyone without a registered mail handler — common
+   on desktop, where webmail is the norm. The address is copied alongside it so
+   the click always leads somewhere. */
+.btn-mail{position:relative}
+.btn-mail.is-copied{background:var(--green);border-color:var(--green);color:#fff}
+.btn-mail .copied-msg{
+ position:absolute;left:50%;bottom:calc(100% + 8px);transform:translateX(-50%);
+ background:var(--ink);color:var(--cream);
+ font-family:var(--label);font-size:10px;letter-spacing:.08em;text-transform:uppercase;
+ padding:6px 10px;border-radius:999px;white-space:nowrap;
+ opacity:0;pointer-events:none;transition:opacity .18s ease;
+}
+.btn-mail.is-copied .copied-msg{opacity:1}
+@media (prefers-reduced-motion:reduce){.btn-mail .copied-msg{transition:none}}
 @media(max-width:940px){.trust{grid-template-columns:1fr}}
 footer{padding:34px var(--pad);border-top:1px solid var(--line);display:flex;justify-content:space-between;gap:18px;flex-wrap:wrap;font-family:var(--label);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink3)}
 @media(max-width:940px){.g3,.pat{grid-template-columns:1fr}.steps{grid-template-columns:1fr 1fr}}
@@ -697,7 +711,7 @@ footer{padding:34px var(--pad);border-top:1px solid var(--line);display:flex;jus
  <div class="acts">
   <a class="btn" href="https://turnos.allitto.com/" target="_blank" rel="noopener">Agendar turno online</a>
   <a class="btn btn-solid" href="https://wa.me/5491135726305">WhatsApp</a>
-  <a class="btn" href="mailto:soyequilibra@gmail.com">soyequilibra@gmail.com</a>
+  <a class="btn btn-mail" href="mailto:soyequilibra@gmail.com" data-mail="soyequilibra@gmail.com">soyequilibra@gmail.com</a>
  </div>
 </section>
 <footer><span>EQUILIBRA — Biomecánica podal</span><span>Belgrano · Próximamente Monte Castro y Mercedes, Buenos Aires</span><span>© 2026</span></footer>
@@ -1047,6 +1061,61 @@ document.querySelectorAll('.card,.step,.lead,.pat>div,.svc-points article,.svc-c
 })();
 </script>
 
+<script>
+/* Copy the address alongside the mailto:. The link is left intact — it still opens
+   a mail client for anyone who has one — but a click now always produces something
+   even when Windows routes mailto: to a browser with no webmail handler set, which
+   fails silently. navigator.clipboard needs a secure context, so plain-HTTP and
+   older browsers fall through to the textarea trick. */
+(function(){
+  var links=[].slice.call(document.querySelectorAll('a[href^="mailto:"]'));
+  if(!links.length) return;
+
+  function copy(text){
+    if(navigator.clipboard&&window.isSecureContext){
+      return navigator.clipboard.writeText(text);
+    }
+    return new Promise(function(resolve,reject){
+      var ta=document.createElement('textarea');
+      ta.value=text;
+      ta.setAttribute('readonly','');
+      ta.style.cssText='position:fixed;top:-9999px;opacity:0';
+      document.body.appendChild(ta);
+      ta.select();
+      var ok=false;
+      try{ ok=document.execCommand('copy'); }catch(e){}
+      document.body.removeChild(ta);
+      ok?resolve():reject();
+    });
+  }
+
+  links.forEach(function(a){
+    var addr=a.getAttribute('data-mail')||a.getAttribute('href').replace(/^mailto:/,'').split('?')[0];
+
+    var msg=document.createElement('span');
+    msg.className='copied-msg';
+    /* polite, not assertive: this confirms an action the user just took */
+    msg.setAttribute('aria-live','polite');
+    a.appendChild(msg);
+
+    var timer=null;
+    function flash(text){
+      msg.textContent=text;
+      a.classList.add('is-copied');
+      if(timer) clearTimeout(timer);
+      timer=setTimeout(function(){
+        a.classList.remove('is-copied');
+        msg.textContent='';
+      },2200);
+    }
+
+    a.addEventListener('click',function(){
+      /* no preventDefault: the mailto still fires for whoever can handle it */
+      copy(addr).then(function(){ flash('Copiado'); }).catch(function(){});
+    });
+  });
+})();
+</script>
 <script>
 /* Segmented control for the bottom bar: a pill slides to the tab you pick, and
    follows the section you are actually reading. Without the scroll half, tapping
