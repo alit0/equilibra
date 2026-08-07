@@ -11,6 +11,7 @@ Documentos base para la marca **Equilibra** (plantillas digitalizadas y evaluaci
 | [05-operacion-comercial.md](./05-operacion-comercial.md) | Turnos, seña, pagos, tiempos, envíos |
 | [06-faq.md](./06-faq.md) | Preguntas frecuentes para web, redes y atención |
 | [07-corpus-atencion.md](./07-corpus-atencion.md) | Texto listo para bot / WhatsApp / onboarding |
+| [08-lanzamiento.md](./08-lanzamiento.md) | Checklist de lanzamiento: decisiones bloqueantes, trabajo técnico y puerta de salida |
 
 ## Datos oficiales actuales
 
