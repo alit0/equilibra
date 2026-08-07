@@ -89,11 +89,18 @@ foreach ($k in $snap1.Keys) {
 Write-Ok "Determinism: dist/ is byte-identical across two consecutive builds."
 
 # 2. Required dist files
-foreach ($f in @('index.html','robots.txt','sitemap.xml','checksums.sha256','build-manifest.json')) {
+foreach ($f in @('index.html','.htaccess','robots.txt','sitemap.xml','checksums.sha256','build-manifest.json')) {
     $p = Join-Path $DistRoot $f
     if (-not (Test-Path -LiteralPath $p)) { Fail-Verify "Required dist file missing: $f" }
 }
 Write-Ok "Required dist files present."
+
+# 2b. .htaccess canonicalization directives survived the build
+$htaccessText = [System.IO.File]::ReadAllText((Join-Path $DistRoot '.htaccess'), [System.Text.UTF8Encoding]::new($false))
+if ($htaccessText -notmatch 'RewriteEngine\s+On')                     { Fail-Verify ".htaccess missing 'RewriteEngine On'." }
+if ($htaccessText -notmatch 'HTTP_HOST')                              { Fail-Verify ".htaccess missing the host canonicalization condition." }
+if ($htaccessText -notmatch [regex]::Escape('https://soyequilibra.com.ar')) { Fail-Verify ".htaccess does not redirect to the apex host." }
+Write-Ok ".htaccess canonicalization directives present."
 
 # 3. Forbidden dist files
 foreach ($f in @('equilibra.html','template.html','isologo.png','logo-trANSPARENCIA.png')) {

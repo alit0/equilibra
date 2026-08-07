@@ -65,9 +65,10 @@ function Get-Sha256Hex {
 
 # 1. Validate inputs
 $templatePath = Join-Path $SourceRoot 'src/template.html'
+$htaccessPath = Join-Path $SourceRoot 'src/.htaccess'
 $siteJsonPath = Join-Path $SourceRoot 'content/site.json'
 $faqsJsonPath = Join-Path $SourceRoot 'content/faqs.json'
-foreach ($p in @($templatePath, $siteJsonPath, $faqsJsonPath)) {
+foreach ($p in @($templatePath, $htaccessPath, $siteJsonPath, $faqsJsonPath)) {
     if (-not (Test-Path -LiteralPath $p)) { Fail-Build "Required input not found: $p" }
 }
 $template = [System.IO.File]::ReadAllText($templatePath, [System.Text.UTF8Encoding]::new($false))
@@ -302,6 +303,13 @@ foreach ($rel in $referenced) {
     Copy-Item -LiteralPath $srcPath -Destination $destPath -Force
     $copiedFiles.Add([pscustomobject]@{ Rel = $rel; Size = (Get-Item -LiteralPath $destPath).Length })
 }
+
+# src/.htaccess is copied explicitly: it is never referenced from the template
+# and has no allowlisted extension, so the loop above cannot pick it up.
+$htaccessDest = Join-Path $DistRoot '.htaccess'
+Copy-Item -LiteralPath $htaccessPath -Destination $htaccessDest -Force
+$copiedFiles.Add([pscustomobject]@{ Rel = '.htaccess'; Size = (Get-Item -LiteralPath $htaccessDest).Length })
+
 # equilibra.html is kept in the list on purpose: the template used to live at the
 # repo root under that name and a past deploy published it. The guard costs nothing
 # and still catches a stale copy reappearing.

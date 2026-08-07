@@ -1,0 +1,22 @@
+# Equilibra - Apache/LiteSpeed configuration.
+#
+# Source file. scripts/build.ps1 copies it to dist/.htaccess on every build;
+# dist/ is wiped and regenerated, so this is the only place to edit it.
+#
+# Scope: URL canonicalization only. One host, one URL per page. Security
+# headers (HSTS, CSP) and cache-control are deliberately NOT here.
+#
+# Rollback: every directive below is per-request and reverts the moment this
+# file is replaced or removed. No state is stored in the browser.
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # /index.html -> / (before host canonicalization, so it stays one hop even
+    # when the request arrives on the www host).
+    RewriteRule ^index\.html$ https://soyequilibra.com.ar/ [R=301,L,NC,NE]
+
+    # Any host other than the bare apex -> apex, preserving path and query.
+    RewriteCond %{HTTP_HOST} !^soyequilibra\.com\.ar$ [NC]
+    RewriteRule ^ https://soyequilibra.com.ar%{REQUEST_URI} [R=301,L,NE]
+</IfModule>
