@@ -27,6 +27,7 @@ import urllib.request
 DEFAULT_BASE = "https://soyequilibra.com.ar"
 APEX_HOST = "soyequilibra.com.ar"
 WWW_HOST = "www.soyequilibra.com.ar"
+BOOKING_ORIGIN = "https://turnos.allitto.com"
 
 # HSTS is the one directive here that browsers remember. While it lives in a
 # visitor's browser, that browser refuses to speak HTTP to the domain, and
@@ -197,8 +198,27 @@ def _():
     value = apex_headers().get("Permissions-Policy")
     expect(value is not None, "Permissions-Policy header is absent")
     normalised = value.lower().replace(" ", "")
-    for feature in ("camera=()", "microphone=()", "geolocation=()", "payment=()"):
+    for feature in ("camera=()", "microphone=()", "geolocation=()"):
         expect(feature in normalised, f"{feature} not denied in {value!r}")
+
+
+@check("Permissions-Policy still delegates payment to the booking iframe")
+def _():
+    # src/template.html grants the booking iframe `allow="payment *"`. An empty
+    # `payment=()` allowlist overrides that and revokes it, which is what the
+    # first version of this header did. Booking takes a deposit, so this asserts
+    # the capability survives rather than assuming the flow does not need it.
+    value = apex_headers().get("Permissions-Policy")
+    expect(value is not None, "Permissions-Policy header is absent")
+    normalised = value.lower().replace(" ", "")
+    expect(
+        "payment=()" not in normalised,
+        f"payment is denied outright, which revokes the booking iframe's grant: {value!r}",
+    )
+    expect(
+        "payment=(" in normalised and BOOKING_ORIGIN.lower() in normalised,
+        f"payment is not delegated to {BOOKING_ORIGIN}: {value!r}",
+    )
 
 
 # --- the page still works --------------------------------------------------

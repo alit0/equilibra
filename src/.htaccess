@@ -37,8 +37,11 @@
     Header always set Referrer-Policy "strict-origin-when-cross-origin"
     Header always set X-Frame-Options "SAMEORIGIN"
 
-    # Deny the device APIs the page has no use for. Payment is denied outright:
-    # the Easy!Appointments iframe has no payment flow, so it is never handed
-    # the capability. Revisit this line if a payment flow is ever added.
-    Header always set Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=()"
+    # Deny the device APIs the page has no use for. Payment is NOT denied: the
+    # booking iframe in src/template.html carries allow="payment *", and an
+    # empty allowlist here overrides that and revokes it -- measured, not
+    # assumed (PaymentRequest threw SecurityError inside the frame). Booking
+    # takes a deposit, so the capability is delegated to the booking origin.
+    # Keep this in step with the iframe's allow attribute.
+    Header always set Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=(self \"https://turnos.allitto.com\")"
 </IfModule>
