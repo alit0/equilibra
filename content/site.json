@@ -26,16 +26,38 @@
       }
     }
   ],
-  "locations": [
+   "locations": [
     {
       "publicName": "Kinest Salud",
       "address": "Dr. David Peña 4235, Monte Castro, CABA",
-      "hours": "Sábados de 10 a 18 hs"
+      "hours": "Sábados de 10 a 18 hs",
+      "addressStructured": {
+        "streetAddress": "Dr. David Peña 4235",
+        "addressLocality": "Monte Castro",
+        "addressRegion": "Ciudad Autónoma de Buenos Aires",
+        "addressCountry": "AR"
+      },
+      "openingHoursSpec": {
+        "dayOfWeek": "https://schema.org/Saturday",
+        "opens": "10:00",
+        "closes": "18:00"
+      }
     },
     {
       "publicName": "Equilibra",
       "address": "José Pacífico Otero 826, Ituzaingó, Buenos Aires",
-      "hours": "Lunes de 8 a 12 hs (último turno 11:30)"
+      "hours": "Lunes de 8 a 12 hs (último turno 11:30)",
+      "addressStructured": {
+        "streetAddress": "José Pacífico Otero 826",
+        "addressLocality": "Ituzaingó",
+        "addressRegion": "Buenos Aires",
+        "addressCountry": "AR"
+      },
+      "openingHoursSpec": {
+        "dayOfWeek": "https://schema.org/Monday",
+        "opens": "08:00",
+        "closes": "12:00"
+      }
     }
   ],
   "og_image": null,

@@ -181,17 +181,27 @@ foreach ($a in $site.area_served) {
 }
 $areaServedJson = '[' + (($areaParts -join ',')) + ']'
 
-# locations with physical address and opening hours (from content/site.json.locations)
+# locations with structured PostalAddress + OpeningHoursSpecification (data from content/site.json only — visible "address"/"hours" untouched)
 $locationParts = New-Object System.Collections.Generic.List[string]
 foreach ($loc in $site.locations) {
     $addrInner = New-Object System.Collections.Generic.List[string]
     [void]$addrInner.Add( (Make-JsonString '@type') + ':' + (Make-JsonString 'PostalAddress') )
-    [void]$addrInner.Add( (Make-JsonString 'streetAddress') + ':' + (Make-JsonString ([string]$loc.address)) )
+    [void]$addrInner.Add( (Make-JsonString 'streetAddress') + ':' + (Make-JsonString ([string]$loc.addressStructured.streetAddress)) )
+    [void]$addrInner.Add( (Make-JsonString 'addressLocality') + ':' + (Make-JsonString ([string]$loc.addressStructured.addressLocality)) )
+    [void]$addrInner.Add( (Make-JsonString 'addressRegion') + ':' + (Make-JsonString ([string]$loc.addressStructured.addressRegion)) )
+    [void]$addrInner.Add( (Make-JsonString 'addressCountry') + ':' + (Make-JsonString ([string]$loc.addressStructured.addressCountry)) )
+
+    $ohsInner = New-Object System.Collections.Generic.List[string]
+    [void]$ohsInner.Add( (Make-JsonString '@type') + ':' + (Make-JsonString 'OpeningHoursSpecification') )
+    [void]$ohsInner.Add( (Make-JsonString 'dayOfWeek') + ':' + (Make-JsonString ([string]$loc.openingHoursSpec.dayOfWeek)) )
+    [void]$ohsInner.Add( (Make-JsonString 'opens') + ':' + (Make-JsonString ([string]$loc.openingHoursSpec.opens)) )
+    [void]$ohsInner.Add( (Make-JsonString 'closes') + ':' + (Make-JsonString ([string]$loc.openingHoursSpec.closes)) )
+
     $locInner = New-Object System.Collections.Generic.List[string]
     [void]$locInner.Add( (Make-JsonString '@type') + ':' + (Make-JsonString 'Place') )
     [void]$locInner.Add( (Make-JsonString 'name') + ':' + (Make-JsonString ([string]$loc.publicName)) )
     [void]$locInner.Add( (Make-JsonString 'address') + ':{' + (($addrInner -join ',')) + '}' )
-    [void]$locInner.Add( (Make-JsonString 'openingHours') + ':' + (Make-JsonString ([string]$loc.hours)) )
+    [void]$locInner.Add( (Make-JsonString 'openingHoursSpecification') + ':{' + (($ohsInner -join ',')) + '}' )
     $locationParts.Add('{' + (($locInner -join ',')) + '}')
 }
 $locationsJson = '[' + (($locationParts -join ',')) + ']'
