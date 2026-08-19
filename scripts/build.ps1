@@ -181,6 +181,21 @@ foreach ($a in $site.area_served) {
 }
 $areaServedJson = '[' + (($areaParts -join ',')) + ']'
 
+# locations with physical address and opening hours (from content/site.json.locations)
+$locationParts = New-Object System.Collections.Generic.List[string]
+foreach ($loc in $site.locations) {
+    $addrInner = New-Object System.Collections.Generic.List[string]
+    [void]$addrInner.Add( (Make-JsonString '@type') + ':' + (Make-JsonString 'PostalAddress') )
+    [void]$addrInner.Add( (Make-JsonString 'streetAddress') + ':' + (Make-JsonString ([string]$loc.address)) )
+    $locInner = New-Object System.Collections.Generic.List[string]
+    [void]$locInner.Add( (Make-JsonString '@type') + ':' + (Make-JsonString 'Place') )
+    [void]$locInner.Add( (Make-JsonString 'name') + ':' + (Make-JsonString ([string]$loc.publicName)) )
+    [void]$locInner.Add( (Make-JsonString 'address') + ':{' + (($addrInner -join ',')) + '}' )
+    [void]$locInner.Add( (Make-JsonString 'openingHours') + ':' + (Make-JsonString ([string]$loc.hours)) )
+    $locationParts.Add('{' + (($locInner -join ',')) + '}')
+}
+$locationsJson = '[' + (($locationParts -join ',')) + ']'
+
 # MedicalBusiness entity
 $medicalEntityParts = New-Object System.Collections.Generic.List[string]
 [void]$medicalEntityParts.Add( (Make-JsonString '@context')     + ':' + (Make-JsonString 'https://schema.org') )
@@ -190,6 +205,7 @@ $medicalEntityParts = New-Object System.Collections.Generic.List[string]
 [void]$medicalEntityParts.Add( (Make-JsonString 'telephone')    + ':' + (Make-JsonString ([string]$site.telephone)) )
 [void]$medicalEntityParts.Add( (Make-JsonString 'areaServed')   + ':' + $areaServedJson )
 [void]$medicalEntityParts.Add( (Make-JsonString 'description')  + ':' + (Make-JsonString ([string]$site.entity_statement)) )
+[void]$medicalEntityParts.Add( (Make-JsonString 'location')     + ':' + $locationsJson )
 
 # Service entities
 $serviceEntities = New-Object System.Collections.Generic.List[string]
