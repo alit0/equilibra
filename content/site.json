@@ -3,18 +3,39 @@
   "site_url": "https://soyequilibra.com.ar/",
   "locale": "es_AR",
   "title": "Equilibra · Biomecánica podal y plantillas a medida",
-  "description": "Estudio de biomecánica podal en Belgrano, CABA. Baropodometría digital y plantillas 100% a medida, diseñadas desde tu pisada.",
-  "entity_statement": "Equilibra es un estudio de biomecánica podal en Belgrano, Buenos Aires.",
+  "description": "Evaluación biomecánica podal y plantillas a medida en Kinest Salud (Monte Castro) y Equilibra (Ituzaingó). Baropodometría digital con entrega en 10-15 días hábiles.",
+  "entity_statement": "Equilibra es un estudio de biomecánica podal que atiende en Kinest Salud (Monte Castro, CABA) los sábados y en Equilibra (Ituzaingó) los lunes.",
   "telephone": "+54 9 11 3259-5130",
   "area_served": [
     {
-      "name": "Belgrano",
+      "name": "Monte Castro",
       "type": "City",
       "containedInPlace": {
         "name": "Ciudad Autónoma de Buenos Aires",
         "type": "AdministrativeArea",
         "addressCountry": "AR"
       }
+    },
+    {
+      "name": "Ituzaingó",
+      "type": "City",
+      "containedInPlace": {
+        "name": "Buenos Aires",
+        "type": "AdministrativeArea",
+        "addressCountry": "AR"
+      }
+    }
+  ],
+  "locations": [
+    {
+      "publicName": "Kinest Salud",
+      "address": "Dr. David Peña 4235, Monte Castro, CABA",
+      "hours": "Sábados de 10 a 18 hs"
+    },
+    {
+      "publicName": "Equilibra",
+      "address": "José Pacífico Otero 826, Ituzaingó, Buenos Aires",
+      "hours": "Lunes de 8 a 12 hs (último turno 11:30)"
     }
   ],
   "og_image": null,
@@ -25,7 +46,7 @@
     },
     {
       "name": "Plantillas a medida",
-      "description": "Plantillas personalizadas diseñadas a partir del estudio biomecánico, fabricadas con goma EVA y resina termo-moldeable según la pisada de cada paciente."
+      "description": "Plantillas personalizadas de EVA de diferentes densidades termoconformada con cubierta de plastazote microperforado, según tu pisada. Urbanas o deportivas al mismo precio."
     }
   ]
 }

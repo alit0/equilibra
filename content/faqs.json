@@ -34,15 +34,19 @@
     },
     {
       "question": "¿Cuánto tardan y cuánto duran?",
-      "answer": "El estudio y el diagnóstico se hacen en la visita. La fabricación estimada es de 7 a 10 días hábiles y te avisamos cuando estén listas. Como referencia, la vida útil ronda 1 año según uso, desgaste y cambios del cuerpo; en el control evaluamos el estado."
+      "answer": "La sesión dura 30 minutos. La fabricación estimada es de 10 a 15 días hábiles y te avisamos cuando estén listas. Como referencia, la vida útil ronda 1 año según uso, desgaste y cambios del cuerpo; en el control evaluamos el estado."
     },
     {
       "question": "¿Dónde atienden?",
-      "answer": "Hoy el punto confirmado es Belgrano, CABA. También estamos avanzando en Monte Castro y evaluando atención en Mercedes, Buenos Aires, pero todavía no están confirmados como sedes abiertas."
+      "answer": "En Kinest Salud (Monte Castro, sábados 10-18 hs) y Equilibra (Ituzaingó, lunes 8-12 hs, último turno 11:30). Consultá disponibilidad exacta al agendar."
     },
     {
-      "question": "¿Necesito una derivación médica?",
-      "answer": "No hace falta para el estudio. Si el diagnóstico muestra algo que excede lo biomecánico, te orientamos y, si corresponde, te derivamos."
+      "question": "¿Trabajan con obra social?",
+      "answer": "No trabajamos directamente con obras sociales. Te entregamos factura para que gestiones el reintegro por tu cuenta. Algunas OS reintegran total o parcialmente, otras no."
+    },
+    {
+      "question": "¿Cómo se reserva el turno?",
+      "answer": "Se abona la evaluación de $20.000 por adelantado (funciona como seña). La agenda no cobra automáticamente; te enviamos los datos de transferencia en la confirmación. En la sesión solo pagás las plantillas."
     },
     {
       "question": "¿Y si ya tengo plantillas?",
