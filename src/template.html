@@ -3,6 +3,12 @@
      iOS. Without it Safari letterboxes the page inside the safe area and every
      inset reads 0, so the bottom bar's clearance work never engages. -->
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<!-- LCP image on mobile viewports (measured with Lighthouse): the footwear-flip
+     controller normally discovers this via a JS-set data-src, which the browser
+     cannot see until script execution. Preloading it here, gated to the same
+     breakpoint the controller uses, lets the preload scanner start the request
+     straight from the initial HTML response instead of waiting on JS. -->
+<link rel="preload" as="image" href="img/footwear/01.webp" media="(max-width:940px)" fetchpriority="high">
 <link rel="icon" href="logo.ico" sizes="any">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="icon" type="image/svg+xml" href="iso.svg">
