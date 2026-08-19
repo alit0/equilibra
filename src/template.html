@@ -296,14 +296,15 @@ nav.nav-desktop a:hover{color:var(--ink)}
 .footwear-flip{display:none}
 .caps{z-index:3}
 .bigtype{margin:0;padding:0;text-align:center;font-family:var(--big);font-weight:400;
- letter-spacing:-.005em;line-height:.9;text-transform:uppercase;color:var(--bigtype);
- will-change:opacity,transform}
+  letter-spacing:-.005em;line-height:.9;text-transform:uppercase;color:var(--bigtype);
+  will-change:opacity,transform}
 .bigline{display:inline-block;white-space:nowrap;font-size:100px}
 @media(max-width:940px){
  .behind{height:56vh}.bigtype{line-height:.96}
- /* #k0 used to sit 2vh lower than the rest; it now shares the .cap offset, so the
-    override would only restate it. */
- .footwear-flip{
+  .caps { z-index: 4; } /* minimal fix to ensure title stays above footwear flip on mobile */
+  /* #k0 used to sit 2vh lower than the rest; it now shares the .cap offset, so the
+     override would only restate it. */
+  .footwear-flip{
   display:block;
   position:absolute;
   left:0;right:0;
