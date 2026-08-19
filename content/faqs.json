@@ -41,6 +41,10 @@
       "answer": "En Kinest Salud (Monte Castro, sábados 10-18 hs) y Equilibra (Ituzaingó, lunes 8-12 hs, último turno 11:30). Consultá disponibilidad exacta al agendar."
     },
     {
+      "question": "¿Necesito una derivación médica?",
+      "answer": "No hace falta para el estudio. Si el diagnóstico muestra algo que excede lo biomecánico, te orientamos y, si corresponde, te derivamos."
+    },
+    {
       "question": "¿Trabajan con obra social?",
       "answer": "No trabajamos directamente con obras sociales. Te entregamos factura para que gestiones el reintegro por tu cuenta. Algunas OS reintegran total o parcialmente, otras no."
     },
