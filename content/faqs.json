@@ -9,6 +9,10 @@
       "answer": "No. En muchos locales deportivos se hace una prueba simple para recomendar zapatillas. En Equilibra el enfoque es de salud: medimos tu mapa de presiones y, si corresponde, fabricamos una plantilla personalizada."
     },
     {
+      "question": "¿Tengo que decidir las plantillas el mismo día?",
+      "answer": "No. La evaluación te muestra de dónde viene la molestia y el presupuesto exacto, así decidís con calma. No hay obligación de avanzar con las plantillas en el momento."
+    },
+    {
       "question": "¿Me van a doler los primeros días?",
       "answer": "Molestar un poco, puede. Doler, no es lo esperable. Tu pie viene apoyando de una forma hace años y la plantilla le propone otra. Hay un período de prueba de 15 días: si no se adapta bien, coordinamos un ajuste sin cargo."
     },
@@ -23,6 +27,10 @@
     {
       "question": "¿Es lo mismo una plantilla de gel de farmacia?",
       "answer": "No. El gel puede amortiguar un rato. La plantilla personalizada se diseña para tu pisada y busca corregir puntos de presión, no solo ablandar el apoyo."
+    },
+    {
+      "question": "¿Usar plantillas debilita los músculos del pie?",
+      "answer": "No es el objetivo. Las plantillas guían el apoyo para que el pie trabaje mejor, no para reemplazar su función. Se complementan bien con ejercicios y rehabilitación cuando hacen falta."
     },
     {
       "question": "¿Atienden niños?",
@@ -51,6 +59,10 @@
     {
       "question": "¿Cómo se reserva el turno?",
       "answer": "Se abona la evaluación de $20.000 por adelantado (funciona como seña). La agenda no cobra automáticamente; te enviamos los datos de transferencia en la confirmación. En la sesión solo pagás las plantillas."
+    },
+    {
+      "question": "¿Hacen envíos?",
+      "answer": "Se pueden coordinar según zona y disponibilidad. El costo del envío suele quedar a cargo del paciente y lo definimos cuando las plantillas estén listas."
     },
     {
       "question": "¿Y si ya tengo plantillas?",
