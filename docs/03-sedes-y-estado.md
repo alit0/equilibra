@@ -2,94 +2,57 @@
 
 ## Regla de oro
 
-Solo se comunica como **confirmada** la sede que ya está lista para atender.  
-Todo lo demás se marca como **en proceso** o **por definir**.
+Solo se comunica como **confirmada** la sede que ya está lista para atender con los datos exactos provistos por el dueño.  
+Hoy hay **exactamente dos sedes confirmadas**. Nada más.
 
 ---
 
-## Confirmada (arranque)
+## Sedes confirmadas
 
-### Belgrano — CABA
-- **Estado:** confirmada para empezar
-- **Zona:** Belgrano, Ciudad Autónoma de Buenos Aires
-- **Dirección de trabajo conocida:** Virrey del Pino 2428, 7º 48
-- **Notas:**
-  - Es el punto de atención confirmado para el arranque de Equilibra
-  - Antes de publicar en web/redes, validar si la dirección exacta y el piso/depto se mantienen
-  - Validar horarios, días de atención y si la plataforma de baropodometría opera en esa sede
+### Kinest Salud — Monte Castro, CABA
 
-**Texto sugerido para web (versión cauta):**
-> Atendemos en Belgrano, CABA. Escribinos para coordinar tu evaluación.
+- **Nombre público:** Kinest Salud
+- **Dirección:** Dr. David Peña 4235, Monte Castro, CABA
+- **Atención:** Sábados de 10 a 18 hs
+- **Excepción 22/08/2026 (inicio):** 14 a 18 hs. Horarios libres: 15:00, 15:30, 16:00, 16:30, 17:30, 18:00.
+- **Notas:** Es el centro que recibe a los pacientes de Equilibra ese día.
 
-**Texto sugerido si se confirma la dirección exacta:**
-> Consultorio en Belgrano: Virrey del Pino 2428, 7º 48, CABA.
+### Equilibra — Ituzaingó, Buenos Aires
 
----
-
-## En proceso (no confirmar todavía)
-
-### Monte Castro — CABA
-- **Estado:** en conversación / en proceso
-- **Zona:** Monte Castro, Capital Federal
-- **Qué se sabe:** hay intención de sumar un espacio de atención en esa zona
-- **Qué falta:** confirmación de lugar, días, horarios y operación
-
-**Texto permitido:**
-> Próximamente también en Monte Castro.
-
-**Texto prohibido por ahora:**
-> Ya atendemos en Monte Castro + dirección inventada o no cerrada.
-
-### Mercedes
-- **Estado:** idea en proceso
-- **Modalidad prevista:** un día de la semana
-- **Qué falta:** confirmación de espacio, día fijo, frecuencia y logística
-
-**Texto permitido:**
-> Estamos evaluando atención en Mercedes un día por semana.
-
-**Texto prohibido por ahora:**
-> Sede Mercedes abierta / turnos disponibles en Mercedes.
-
-### Otros puntos
-- **Estado:** en conversación con espacios y personas correspondientes
-- **Comunicación:** “Estamos sumando más puntos de atención” sin nombrar lugares no cerrados
+- **Nombre público:** Equilibra
+- **Dirección:** José Pacífico Otero 826, Ituzaingó, Buenos Aires
+- **Atención:** Lunes de 8 a 12 hs (último turno 11:30 hs)
+- **Notas:** Posible ampliación a miércoles de 8 a 12 hs más adelante. **No publicar todavía.**
 
 ---
 
-## Cómo hablar de la red de sedes
+## Lo que NO se publica nunca
 
-### Versión corta (web / Instagram)
-> Empezamos en Belgrano y estamos sumando nuevos puntos de atención.
-
-### Versión media
-> El punto confirmado para arrancar es nuestro consultorio en Belgrano.  
-> También estamos avanzando en Monte Castro y evaluando atención en Mercedes, además de otros espacios en conversación.
-
-### Versión interna (equipo / bot)
-1. Si preguntan por sede disponible hoy → **Belgrano**
-2. Si preguntan por Monte Castro o Mercedes → **en proceso, te avisamos cuando esté confirmado**
-3. No ofrecer turnos en sedes no confirmadas
+- **Floresta** — no es una sede. La localidad real del punto es Monte Castro.
+- **Belgrano** — no se atiende ahí. Cualquier mención anterior era falsa.
+- **Mercedes** — eventual, sin confirmar. Fuera de toda comunicación.
 
 ---
 
-## Checklist antes de publicar una sede
+## Cómo hablar de las sedes (versión actualizada)
 
-- [ ] Dirección exacta confirmada
-- [ ] Días y horarios confirmados
-- [ ] Profesional/es de esa sede definidos
-- [ ] Cómo se agenda (WhatsApp / web / otro)
-- [ ] Si hay plataforma de baropodometría en el lugar o se trabaja con otra logística
-- [ ] Cómo se retiran o entregan plantillas
-- [ ] Texto de “cómo llegar” (opcional pero útil)
+**Versión corta (web / ads):**
+> Atendemos en Kinest Salud (Monte Castro) los sábados y en Equilibra (Ituzaingó) los lunes. Consultá disponibilidad.
+
+**Versión para FAQ / JSON-LD:**
+Deben aparecer las dos sedes con su nombre público, dirección exacta y horarios.
+
+**Regla estricta:**
+Ambas sedes deben estar en el texto visible **y** en los datos estructurados. El grep de verificación no debe encontrar "belgrano|mercedes|floresta" en content/ ni src/.
 
 ---
 
-## Mapa de comunicación recomendado
+## Checklist antes de considerar "sedes listas"
 
-| Sede | Web | Instagram | WhatsApp/bot | Ads |
-|---|---|---|---|---|
-| Belgrano | Sí, como sede activa | Sí | Sí | Sí |
-| Monte Castro | Solo “próximamente” | Solo “próximamente” | “En proceso” | No todavía |
-| Mercedes | Solo “en evaluación” | Opcional | “En proceso” | No todavía |
-| Otras | No nombrar | No nombrar | No nombrar | No |
+- [x] Dirección exacta confirmada por el dueño
+- [x] Días y horarios confirmados
+- [x] Nombre público por sede (Kinest Salud / Equilibra)
+- [x] Ambos en texto visible y JSON-LD
+- [ ] Verificar que `verify.ps1` pasa y el grep de palabras prohibidas da cero resultados
+
+Este documento reemplaza toda la información anterior que era incorrecta.

@@ -29,8 +29,8 @@ Plantillas diseñadas a partir del estudio digital, no con moldes genéricos.
 
 Características:
 - 100% a medida
-- materiales de soporte y flexibilidad (goma EVA y resina termo-moldeable)
-- técnicas de termofusión para terminación resistente y cómoda
+- cuerpo de EVA de diferentes densidades termoconformada con cubierta de plastazote microperforado
+- urbanas (más finas) o deportivas (más resistentes) según necesidad del paciente
 - aptas para adultos y niños a partir de 4 años
 - pensadas para calzado con plantilla extraíble (zapatillas, muchos zapatos casuales y de trabajo)
 
@@ -83,7 +83,7 @@ No hay que “adivinarlo”: el estudio digital muestra el mapa de apoyo.
 
 > Validar con el dueño antes de publicar cifras exactas.
 
-- Fabricación estimada: **7 a 10 días hábiles**
+- Fabricación estimada: **10 a 15 días hábiles**
 - Período de prueba / garantía de ajuste: **15 días** desde el retiro o inicio de uso
 - Vida útil orientativa de las plantillas: **aprox. 1 año**, con reevaluación recomendada
 
@@ -102,7 +102,7 @@ La baropodometría permite ver presiones en apoyo y, cuando se hace dinámica, t
 
 ## Materiales y uso
 
-- Materiales habituales: goma EVA + resina termo-moldeable
+- Materiales: EVA de diferentes densidades + plastazote microperforado como cubierta
 - Se recomienda uso con medias
 - Limpieza: paño húmedo y jabón neutro; no lavarropas; no calor directo
 - Siempre se trabaja con el **par completo**, aunque el dolor aparezca en un solo pie
