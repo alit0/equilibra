@@ -354,12 +354,14 @@ h1 {
   border-radius: 0;
 }
 .field input::placeholder { color: var(--ink3); }
-.field input:focus {
-  border: 2px solid var(--ink);
-  padding: 0 13px;
-}
 .field.is-error input {
   border: 2px solid var(--ember);
+  padding: 0 13px;
+}
+.field input:focus,
+.field input:focus-visible {
+  outline: none;
+  border: 2px solid var(--ink);
   padding: 0 13px;
 }
 .field.is-error label,

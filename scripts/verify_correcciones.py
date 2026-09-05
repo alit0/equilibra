@@ -262,6 +262,46 @@ def box_gap(above, below) -> float:
     return b["y"] - (a["y"] + a["height"])
 
 
+def input_focus_chrome(page, selector: str) -> dict:
+    page.locator(selector).focus()
+    return page.locator(selector).evaluate(
+        """el => {
+          const s = getComputedStyle(el);
+          return {
+            outlineWidth: s.outlineWidth,
+            outlineStyle: s.outlineStyle,
+            borderTopWidth: s.borderTopWidth,
+          };
+        }"""
+    )
+
+
+def verify_a11(page) -> dict:
+    """Focused step-4 inputs show one line, not outline + border."""
+    go_to_datos(page)
+    page.set_viewport_size({"width": 390, "height": 844})
+    page.fill("#first-name", "Maria")
+    page.fill("#last-name", "Lopez")
+    page.fill("#email", "maria.lopez@gmail.com")
+    page.fill("#email-confirm", "maria.lopez@gmail.com")
+    page.fill("#phone", "11 5555 5555")
+    fields = ["#first-name", "#last-name", "#email", "#email-confirm", "#phone", "#notes"]
+    result = {}
+    for sel in fields:
+        chrome = input_focus_chrome(page, sel)
+        result[sel] = chrome
+        outline_px = float(str(chrome["outlineWidth"]).replace("px", "") or 0)
+        border_px = float(str(chrome["borderTopWidth"]).replace("px", "") or 0)
+        has_outline = chrome["outlineStyle"] not in ("none", "auto") and outline_px > 0
+        assert border_px >= 2, f"{sel} focus line missing: border {border_px}"
+        assert not has_outline, f"{sel} still has a second outline line: {chrome}"
+    page.locator("#first-name").focus()
+    page.screenshot(path=str(SHOTS / "a11-focus-name-390.png"), full_page=True)
+    page.locator("#email").focus()
+    page.screenshot(path=str(SHOTS / "a11-focus-email-390.png"), full_page=True)
+    return result
+
+
 def verify_a10(page) -> dict:
     """Step 4 fields must read as separate units. One form gap, using --pad (24px)."""
     go_to_datos(page)
@@ -419,7 +459,7 @@ def main() -> int:
         "1": verify_d1, "2": verify_d2, "3": verify_d3,
         "4": verify_d4, "5": verify_d5, "6": verify_d6, "7": verify_d7,
         "a7": verify_a7, "a8": verify_a8, "a9": verify_a9,
-        "a10": verify_a10,
+        "a10": verify_a10, "a11": verify_a11,
     }.get(args.defect)
     if fn is None:
         print(f"unknown defect {args.defect}", file=sys.stderr)
