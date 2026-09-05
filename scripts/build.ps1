@@ -336,6 +336,23 @@ $htaccessDest = Join-Path $DistRoot '.htaccess'
 Copy-Item -LiteralPath $htaccessPath -Destination $htaccessDest -Force
 $copiedFiles.Add([pscustomobject]@{ Rel = '.htaccess'; Size = (Get-Item -LiteralPath $htaccessDest).Length })
 
+# Self-hosted webfonts and their OFL licenses live in a subfolder of src/turnos,
+# which the top-level asset loops do not descend into; copy that folder explicitly.
+$turnosFontsSrc = Join-Path $SourceRoot 'src/turnos/fonts'
+$turnosFontsDest = Join-Path $DistRoot 'turnos/fonts'
+if (-not (Test-Path -LiteralPath $turnosFontsSrc)) {
+    Fail-Build "Required input not found: $turnosFontsSrc"
+}
+New-Item -ItemType Directory -Path $turnosFontsDest -Force | Out-Null
+Get-ChildItem -LiteralPath $turnosFontsSrc -File | ForEach-Object {
+    $ext = $_.Extension.ToLowerInvariant()
+    if ($allowedExts -notcontains $ext) {
+        Fail-Build "Disallowed asset extension in src/turnos/fonts: $($_.Name)"
+    }
+    Copy-Item -LiteralPath $_.FullName -Destination (Join-Path $turnosFontsDest $_.Name) -Force
+    $copiedFiles.Add([pscustomobject]@{ Rel = ('turnos/fonts/' + $_.Name); Size = $_.Length })
+}
+
 # equilibra.html is kept in the list on purpose: the template used to live at the
 # repo root under that name and a past deploy published it. The guard costs nothing
 # and still catches a stale copy reappearing.
