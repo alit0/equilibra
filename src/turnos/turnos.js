@@ -3,6 +3,9 @@
 
   var EA = "https://turnos.allitto.com/index.php/booking";
   var WRITE_RE = /booking\/register|book_appointment/i;
+  // Single place to point the reservation POST. Change this at deploy.
+  var BOOKING_URL = "http://127.0.0.1:8787/api/reservar";
+  var WHATSAPP_URL = "https://wa.me/5491132595130";
   var MONTHS = [
     "enero", "febrero", "marzo", "abril", "mayo", "junio",
     "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"
@@ -43,7 +46,12 @@
     hours: [],
     monthFetch: null,
     hoursFetch: null,
-    patient: { firstName: "", lastName: "", email: "", phone: "", notes: "" }
+    patient: { firstName: "", lastName: "", email: "", phone: "", notes: "" },
+    formStartedAt: null,
+    idempotencyKey: null,
+    idempotencyFp: null,
+    submitting: false,
+    booked: false
   };
 
   var els = {
@@ -72,9 +80,10 @@
     errorTitle: document.getElementById("error-summary-title"),
     errorList: document.getElementById("error-summary-list"),
     summary: document.getElementById("summary"),
-    demo: document.getElementById("demo-banner"),
+    bookingResult: document.getElementById("booking-result"),
     ctaConfirm: document.getElementById("cta-confirm"),
-    confirmError: document.getElementById("confirm-error")
+    confirmError: document.getElementById("confirm-error"),
+    checks: document.querySelector(".checks")
   };
 
   function todayAR() {
@@ -219,6 +228,21 @@
       5: "Paso 5 de 5 — Confirmación"
     };
     els.stepLabel.textContent = labels[n];
+    if (n === 4 && state.formStartedAt == null) {
+      state.formStartedAt = Date.now();
+    }
+    if (n !== 5 && !state.submitting) {
+      state.booked = false;
+      els.bookingResult.hidden = true;
+      els.bookingResult.textContent = "";
+      els.ctaConfirm.hidden = false;
+      els.ctaConfirm.disabled = false;
+      els.ctaConfirm.textContent = "Pedir la evaluación";
+      els.ctaConfirm.setAttribute("aria-busy", "false");
+      if (els.checks) els.checks.hidden = false;
+      var title5 = document.getElementById("title-5");
+      if (title5) title5.textContent = "Revisá tu turno";
+    }
     els.panels.forEach(function (p) {
       var step = Number(p.getAttribute("data-step"));
       p.hidden = step !== n;
@@ -673,8 +697,217 @@
         notes: state.patient.notes
       },
       terms_accepted: document.getElementById("terms").checked,
-      privacy_accepted: document.getElementById("privacy").checked
+      privacy_accepted: document.getElementById("privacy").checked,
+      website: (document.getElementById("website") || {}).value || "",
+      form_started_at: state.formStartedAt,
+      idempotency_key: ensureIdempotencyKey()
     };
+  }
+
+  function turnoFingerprint() {
+    return String(state.sede.serviceId) + ":" + String(state.sede.providerId) + ":" +
+      String(state.date) + ":" + String(state.hour);
+  }
+
+  function uuidv4() {
+    if (window.crypto && typeof window.crypto.randomUUID === "function") {
+      return window.crypto.randomUUID();
+    }
+    var bytes = new Uint8Array(16);
+    if (window.crypto && window.crypto.getRandomValues) {
+      window.crypto.getRandomValues(bytes);
+    } else {
+      for (var i = 0; i < 16; i++) bytes[i] = Math.floor(Math.random() * 256);
+    }
+    bytes[6] = (bytes[6] & 0x0f) | 0x40;
+    bytes[8] = (bytes[8] & 0x3f) | 0x80;
+    var hex = Array.prototype.map.call(bytes, function (b) {
+      return (b + 256).toString(16).slice(1);
+    }).join("");
+    return hex.slice(0, 8) + "-" + hex.slice(8, 12) + "-" + hex.slice(12, 16) +
+      "-" + hex.slice(16, 20) + "-" + hex.slice(20);
+  }
+
+  function ensureIdempotencyKey() {
+    var fp = turnoFingerprint();
+    if (!state.idempotencyKey || state.idempotencyFp !== fp) {
+      state.idempotencyKey = uuidv4();
+      state.idempotencyFp = fp;
+    }
+    return state.idempotencyKey;
+  }
+
+  function setConfirmBusy(busy) {
+    state.submitting = busy;
+    els.ctaConfirm.disabled = busy || state.booked;
+    els.ctaConfirm.setAttribute("aria-busy", busy ? "true" : "false");
+    els.ctaConfirm.textContent = busy ? "Reservando…" : "Pedir la evaluación";
+  }
+
+  function appendErrorLink(node, href, label) {
+    node.appendChild(document.createTextNode(" "));
+    var a = document.createElement("a");
+    a.href = href;
+    a.target = "_blank";
+    a.rel = "noopener noreferrer";
+    a.className = "text-link";
+    a.textContent = label;
+    node.appendChild(a);
+  }
+
+  function showConfirmError(msg, opts) {
+    opts = opts || {};
+    var retry = opts.retry;
+    var retryLabel = opts.retryLabel;
+    showError(els.confirmError, msg, retry ? function () {
+      retry();
+    } : undefined);
+    if (retry && retryLabel) {
+      var btn = els.confirmError.querySelector("button.text-link");
+      if (btn) btn.textContent = retryLabel;
+    }
+    if (opts.whatsapp) {
+      appendErrorLink(els.confirmError, WHATSAPP_URL, "Escribinos por WhatsApp");
+    }
+  }
+
+  function parseJsonSafe(text) {
+    if (!text) return {};
+    try { return JSON.parse(text); } catch (e) { return {}; }
+  }
+
+  function fieldTarget(name) {
+    var key = String(name || "").replace(/^customer\./, "");
+    var map = {
+      first_name: { step: 4, id: "first-name", key: "first", msg: "Revisá tu nombre." },
+      last_name: { step: 4, id: "last-name", key: "last", msg: "Revisá tu apellido." },
+      email: { step: 4, id: "email", key: "email", msg: "Revisá tu email." },
+      phone: { step: 4, id: "phone", key: "phone", msg: "Revisá tu celular." },
+      phone_number: { step: 4, id: "phone", key: "phone", msg: "Revisá tu celular." },
+      notes: { step: 4, id: "notes" },
+      selected_date: { step: 2, msg: "Elegí otro día." },
+      selected_hour: { step: 3, msg: "Elegí otro horario." },
+      terms_accepted: { step: 5, id: "terms", msg: "Tenés que aceptar los Términos y Condiciones." },
+      privacy_accepted: { step: 5, id: "privacy", msg: "Tenés que aceptar la Política de Privacidad." }
+    };
+    return map[key] || null;
+  }
+
+  function goToField(target) {
+    if (!target) return;
+    if (target.step && target.step !== state.step) {
+      setStep(target.step);
+      if (target.step === 2) loadMonth();
+      if (target.step === 3) loadHours();
+    }
+    if (target.id) {
+      var el = document.getElementById(target.id);
+      if (el) el.focus();
+    }
+  }
+
+  function businessMessage(code) {
+    if (code === "requested_hour_is_unavailable") {
+      return "El horario que elegiste se acaba de ocupar, elegí otro.";
+    }
+    if (code === "customer_is_already_booked") {
+      return "Ya tenés un turno en ese horario. Elegí otro, o escribinos si necesitás cambiarlo.";
+    }
+    if (code === "patient_already_booked_that_day") {
+      return "Ya tenés un turno este día. Si es para otra persona, usá su nombre.";
+    }
+    if (code === "invalid_request") {
+      return "Revisá los datos e intentá de nuevo.";
+    }
+    return "No pudimos reservar ese turno. Elegí otro horario o escribinos.";
+  }
+
+  function showSuccess(appointmentId) {
+    state.booked = true;
+    setConfirmBusy(false);
+    els.ctaConfirm.hidden = true;
+    els.ctaConfirm.disabled = true;
+    if (els.checks) els.checks.hidden = true;
+    clearError(els.confirmError);
+    document.getElementById("title-5").textContent = "Turno reservado";
+    els.bookingResult.textContent = "";
+    var title = document.createElement("p");
+    title.className = "pay-title";
+    title.textContent = "Turno reservado";
+    var when = document.createElement("p");
+    when.textContent = formatLong(state.date) + " · " + state.hour + " · " + state.sede.name;
+    var who = document.createElement("p");
+    who.textContent = state.patient.firstName + " " + state.patient.lastName;
+    var num = document.createElement("p");
+    num.textContent = "Número de reserva: " + appointmentId + ".";
+    els.bookingResult.appendChild(title);
+    els.bookingResult.appendChild(when);
+    els.bookingResult.appendChild(who);
+    els.bookingResult.appendChild(num);
+    els.bookingResult.hidden = false;
+    announce("Turno reservado. " + when.textContent + ". Número de reserva: " + appointmentId + ".");
+    els.bookingResult.focus();
+  }
+
+  function handleBookingFailure(status, body) {
+    setConfirmBusy(false);
+    var code = body && body.code;
+    var fields = (body && Array.isArray(body.fields)) ? body.fields : [];
+
+    if (status === 409 || code === "requested_hour_is_unavailable" ||
+        code === "customer_is_already_booked" || code === "patient_already_booked_that_day") {
+      showConfirmError(businessMessage(code), {
+        retry: function () {
+          clearError(els.confirmError);
+          setStep(3);
+          loadHours();
+        },
+        retryLabel: "Elegí otro horario"
+      });
+      return;
+    }
+
+    if (status === 400 || code === "invalid_request") {
+      if (fields.length) {
+        var first = fieldTarget(fields[0]);
+        fields.forEach(function (name) {
+          var t = fieldTarget(name);
+          if (t && t.key) setFieldError(t.key, t.msg);
+          if (t && (t.id === "terms" || t.id === "privacy")) {
+            showError(document.getElementById(t.id + "-error"), t.msg);
+          }
+        });
+        showConfirmError(first && first.msg ? first.msg : businessMessage("invalid_request"));
+        goToField(first);
+        return;
+      }
+      showConfirmError(businessMessage(code || "invalid_request"));
+      return;
+    }
+
+    showConfirmError(
+      "No pudimos confirmar el turno. El problema es nuestro, no tuyo.",
+      { whatsapp: true }
+    );
+  }
+
+  function postReservation(data) {
+    if (WRITE_RE.test(String(BOOKING_URL))) {
+      throw new Error("Blocked write to production agenda");
+    }
+    var controller = new AbortController();
+    var timer = setTimeout(function () { controller.abort(); }, FETCH_TIMEOUT_MS);
+    return fetch(BOOKING_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Accept": "application/json" },
+      body: JSON.stringify(data),
+      cache: "no-store",
+      signal: controller.signal
+    }).then(function (res) {
+      return res.text().then(function (text) {
+        return { res: res, body: parseJsonSafe(text) };
+      });
+    }).finally(function () { clearTimeout(timer); });
   }
 
   els.ctaSede.addEventListener("click", function () {
@@ -730,7 +963,8 @@
       return;
     }
     renderSummary();
-    els.demo.hidden = true;
+    els.bookingResult.hidden = true;
+    clearError(els.confirmError);
     setStep(5);
   });
 
@@ -766,6 +1000,7 @@
   });
 
   els.ctaConfirm.addEventListener("click", function () {
+    if (state.submitting || state.booked) return;
     var ok = true;
     if (!document.getElementById("terms").checked) {
       showError(document.getElementById("terms-error"), "Tenés que aceptar los Términos y Condiciones.");
@@ -787,11 +1022,25 @@
       document.getElementById("terms").focus();
       return;
     }
+    clearError(els.confirmError);
+    els.bookingResult.hidden = true;
     var data = payload();
-    console.log("[equilibra-turnos] payload que se mandaría a booking/register (NO enviado):", data);
-    els.demo.hidden = false;
-    announce("Acá iría la reserva. En esta etapa no se envía nada a la agenda.");
-    els.demo.focus();
+    setConfirmBusy(true);
+    announce("Reservando tu turno.");
+    postReservation(data).then(function (result) {
+      if (result.res.status === 201 && result.body && result.body.ok === true &&
+          result.body.appointment_id != null) {
+        showSuccess(result.body.appointment_id);
+        return;
+      }
+      handleBookingFailure(result.res.status, result.body || {});
+    }).catch(function () {
+      setConfirmBusy(false);
+      showConfirmError(
+        "No pudimos confirmar el turno. El problema es nuestro, no tuyo.",
+        { whatsapp: true }
+      );
+    });
   });
 
   document.querySelectorAll("[data-back]").forEach(function (btn) {

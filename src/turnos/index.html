@@ -70,6 +70,9 @@
       <ul id="error-summary-list"></ul>
     </div>
     <form id="datos-form" novalidate>
+      <div class="hp" aria-hidden="true">
+        <input id="website" name="website" type="text" tabindex="-1" autocomplete="off" value="">
+      </div>
       <div class="field" id="field-first">
         <label for="first-name">Nombre</label>
         <input id="first-name" name="firstName" type="text" autocomplete="given-name" required maxlength="80" aria-describedby="first-name-error">
@@ -133,9 +136,7 @@
       <p class="field-error" id="privacy-error" hidden></p>
     </div>
     <p class="field-error" id="confirm-error" hidden></p>
-    <div class="demo-banner" id="demo-banner" hidden role="status" tabindex="-1">
-      Acá iría la reserva. En esta etapa no se envía nada a la agenda.
-    </div>
+    <div class="demo-banner" id="booking-result" hidden role="status" tabindex="-1"></div>
     <button type="button" class="cta" id="cta-confirm">Pedir la evaluación</button>
   </section>
 </main>
