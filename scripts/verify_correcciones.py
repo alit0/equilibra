@@ -115,6 +115,23 @@ def verify_d2(page) -> dict:
     return result
 
 
+def verify_d3(page) -> dict:
+    """A hung fetch must surface the calendar error after ~10-12s, not hang."""
+    page.route("**/get_unavailable_dates*", lambda route: None)
+    go_to_calendar(page)
+    started = time.time()
+    page.wait_for_selector("#day-error", state="visible", timeout=16000)
+    elapsed = time.time() - started
+    page.screenshot(path=str(SHOTS / "d3-timeout.png"), full_page=True)
+    available = page.locator(".cal-day.is-available").count()
+    error = page.locator("#day-error").inner_text()
+    result = {"elapsed_s": round(elapsed, 2), "available": available, "error": error}
+    assert 9 <= elapsed <= 14, f"timeout was {elapsed:.2f}s, expected 10-12s"
+    assert available == 0
+    assert "cargar" in error.lower()
+    return result
+
+
 def verify_d1(page) -> dict:
     """Fail-closed calendar: aborted month fetch must leave zero bookable days
     and a real retry button."""
@@ -152,7 +169,7 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--defect", required=True)
     args = parser.parse_args()
-    fn = {"1": verify_d1, "2": verify_d2}.get(args.defect)
+    fn = {"1": verify_d1, "2": verify_d2, "3": verify_d3}.get(args.defect)
     if fn is None:
         print(f"unknown defect {args.defect}", file=sys.stderr)
         return 2

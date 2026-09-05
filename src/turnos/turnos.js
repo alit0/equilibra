@@ -107,11 +107,16 @@
   }
   function announce(msg) { els.live.textContent = msg; }
 
+  var FETCH_TIMEOUT_MS = 11000;
+
   function eaFetch(url, opts) {
     if (WRITE_RE.test(String(url))) {
       throw new Error("Blocked write to production agenda");
     }
-    return fetch(url, Object.assign({ cache: "no-store" }, opts || {}));
+    var controller = new AbortController();
+    var timer = setTimeout(function () { controller.abort(); }, FETCH_TIMEOUT_MS);
+    var merged = Object.assign({ cache: "no-store" }, opts || {}, { signal: controller.signal });
+    return fetch(url, merged).finally(function () { clearTimeout(timer); });
   }
 
   function getUnavailable(sede, y, m) {
