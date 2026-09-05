@@ -253,6 +253,32 @@ def verify_d4(page) -> dict:
     return result
 
 
+def box_gap(above, below) -> float:
+    a = above.bounding_box()
+    b = below.bounding_box()
+    return b["y"] - (a["y"] + a["height"])
+
+
+def verify_a7(page) -> dict:
+    """Notes field must not sit flush against the confirm CTA. Use panel 16px stack gap."""
+    go_to_datos(page)
+    page.set_viewport_size({"width": 390, "height": 844})
+    notes = page.locator("#notes")
+    cta = page.locator("#cta-datos")
+    phone = page.locator("#phone")
+    notes_field = page.locator("#field-notes")
+    gap_notes_cta = box_gap(notes, cta)
+    gap_phone_notes = box_gap(phone, notes_field)
+    page.screenshot(path=str(SHOTS / "a7-notes-gap-390.png"), full_page=True)
+    result = {
+        "gap_notes_cta": round(gap_notes_cta, 1),
+        "gap_phone_notes": round(gap_phone_notes, 1),
+    }
+    assert gap_notes_cta >= 15, f"notes still flush against CTA: {gap_notes_cta}px"
+    assert abs(gap_notes_cta - gap_phone_notes) <= 2, result
+    return result
+
+
 def verify_d3(page) -> dict:
     """A hung fetch must surface the calendar error after ~10-12s, not hang."""
     page.route("**/get_unavailable_dates*", lambda route: None)
@@ -310,6 +336,7 @@ def main() -> int:
     fn = {
         "1": verify_d1, "2": verify_d2, "3": verify_d3,
         "4": verify_d4, "5": verify_d5, "6": verify_d6, "7": verify_d7,
+        "a7": verify_a7,
     }.get(args.defect)
     if fn is None:
         print(f"unknown defect {args.defect}", file=sys.stderr)
