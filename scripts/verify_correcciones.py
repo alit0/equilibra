@@ -262,6 +262,24 @@ def box_gap(above, below) -> float:
     return b["y"] - (a["y"] + a["height"])
 
 
+def verify_a10(page) -> dict:
+    """Step 4 fields must read as separate units. One form gap, using --pad (24px)."""
+    go_to_datos(page)
+    page.set_viewport_size({"width": 390, "height": 844})
+    gaps = {
+        "first_last": box_gap(page.locator("#first-name"), page.locator("#field-last")),
+        "last_email": box_gap(page.locator("#last-name"), page.locator("#field-email")),
+        "phone_notes": box_gap(page.locator("#phone"), page.locator("#field-notes")),
+        "notes_cta": box_gap(page.locator("#notes"), page.locator("#cta-datos")),
+    }
+    page.screenshot(path=str(SHOTS / "a10-fields-air-390.png"), full_page=True)
+    result = {k: round(v, 1) for k, v in gaps.items()}
+    for name, g in gaps.items():
+        assert g >= 23, f"{name} still tight: {g}px"
+    assert abs(gaps["phone_notes"] - gaps["notes_cta"]) <= 2
+    return result
+
+
 def verify_a9(page) -> dict:
     """Step 5 copy states the 24h payment window. No timer or expiry logic."""
     go_to_confirm(page)
@@ -401,6 +419,7 @@ def main() -> int:
         "1": verify_d1, "2": verify_d2, "3": verify_d3,
         "4": verify_d4, "5": verify_d5, "6": verify_d6, "7": verify_d7,
         "a7": verify_a7, "a8": verify_a8, "a9": verify_a9,
+        "a10": verify_a10,
     }.get(args.defect)
     if fn is None:
         print(f"unknown defect {args.defect}", file=sys.stderr)
