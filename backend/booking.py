@@ -51,10 +51,13 @@ from __future__ import annotations
 
 import datetime as _dt
 import hashlib
+import logging
 import re
 import unicodedata
 from dataclasses import dataclass
 from typing import Any, Protocol
+
+_LOG = logging.getLogger(__name__)
 
 # The clinic keeps its calendar (and EA stores appointment times) in
 # America/Argentina/Buenos_Aires. "Today"/future comparisons always use this
@@ -476,6 +479,17 @@ def book(
     no row to serialise on, so the sub-millisecond window on a true simultaneous
     double-POST cannot be fully removed until EA validates slots server-side or
     an out-of-band lock/idempotency key is added (decided separately).
+
+    Guarantee of that rollback: when the post-create reconciliation finds an
+    overlap we always reply ``requested_hour_is_unavailable`` — the caller is
+    never told the booking succeeded. If ``delete_appointment`` succeeds, our own
+    row is gone and EA keeps the concurrent one (consistent, one turn). If the
+    DELETE *fails* (e.g. EA is unreachable on that call) the two turns both stay
+    on the calendar; that is NOT silently ignored — we log an ERROR carrying the
+    ``appointment_id`` we failed to remove so an operator can reconcile, and we
+    still return a controlled error, never a raw transport exception. What EA
+    gives no transaction for, we cannot fix: a failed DELETE leaves an orphan a
+    human must delete.
     """
     validate_payload(payload)
 
@@ -567,7 +581,17 @@ def book(
         if (a.get("id") is not None and int(a["id"]) != created_id)
     ]
     if others:
-        gateway.delete_appointment(created_id)
+        try:
+            gateway.delete_appointment(created_id)
+        except Exception as exc:  # noqa: BLE001 - a failed rollback must still
+            # never report success, and must leave a trace an operator can act on.
+            _LOG.error(
+                "rollback of overlapping appointment %s after POST failed (%s: %s); "
+                "manual cleanup required - two turns may share the same slot",
+                created_id,
+                exc.__class__.__name__,
+                exc,
+            )
         raise BookingError(
             "requested_hour_is_unavailable",
             "Ese horario ya no está disponible. Elegí otro horario.",
