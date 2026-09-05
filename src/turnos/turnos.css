@@ -254,6 +254,9 @@ h1 {
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
 }
+.cal-grid {
+  grid-template-rows: repeat(6, 44px);
+}
 .cal-dows span {
   display: grid;
   place-items: center;
@@ -289,6 +292,14 @@ h1 {
   font-weight: 500;
 }
 .cal-day:disabled { color: var(--muted); }
+.cal-day.is-skeleton {
+  border: 1px solid var(--line);
+  animation: cal-skeleton-pulse 1.4s ease-in-out infinite;
+}
+@keyframes cal-skeleton-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
 
 .hours {
   display: grid;
@@ -581,4 +592,5 @@ h1 {
 
 @media (prefers-reduced-motion: reduce) {
   .cta { transition: none; }
+  .cal-day.is-skeleton { animation: none; }
 }

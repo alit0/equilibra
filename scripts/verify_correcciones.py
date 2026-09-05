@@ -347,6 +347,54 @@ def verify_a10(page) -> dict:
     return result
 
 
+def verify_a17(page) -> dict:
+    """Prefetch on sede select; skeleton matches 6x7 real grid with zero height shift."""
+    held = []
+    page.route("**/get_unavailable_dates*", lambda route: held.append(route))
+    page.goto(BASE + "/turnos/", wait_until="domcontentloaded")
+    wait_held(page, held, 1)
+    page.locator(".sede").nth(0).click()
+    assert len(held) == 1, "same-sede click must not start a second fetch"
+    page.get_by_role("button", name="Elegir esta sede").click()
+    page.wait_for_selector(".cal-grid .cal-day", timeout=5000)
+    skeleton = page.locator(".cal-day.is-skeleton")
+    page.wait_for_timeout(50)
+    assert skeleton.count() == 42
+    assert page.locator("#calendar").get_attribute("aria-busy") == "true"
+    assert page.locator(".cal-day.is-skeleton[aria-hidden='true']").count() == 42
+    assert "cargando disponibilidad" not in page.locator("#cal-legend").inner_text().lower()
+    h1 = page.locator("#cal-grid").bounding_box()["height"]
+    page.screenshot(path=str(SHOTS / "a17-skeleton-390.png"), full_page=True)
+    fulfill_json(held[0], [])
+    page.wait_for_selector(".cal-day.is-available", timeout=5000)
+    h2 = page.locator("#cal-grid").bounding_box()["height"]
+    page.screenshot(path=str(SHOTS / "a17-loaded-390.png"), full_page=True)
+    result = {
+        "prefetch_before_cta": 1,
+        "skeleton_cells": 42,
+        "height_skeleton": round(h1, 1),
+        "height_loaded": round(h2, 1),
+        "loaded_cells": page.locator("#cal-grid .cal-day").count(),
+        "busy_after": page.locator("#calendar").get_attribute("aria-busy"),
+    }
+    assert abs(h1 - h2) <= 1, result
+    assert result["loaded_cells"] == 42
+    assert result["busy_after"] in (None, "false")
+
+    page.get_by_role("button", name="Volver atrás").click()
+    wait_held(page, held, 2)
+    page.locator(".sede").nth(1).click()
+    wait_held(page, held, 3)
+    fulfill_json(held[1], {"is_month_unavailable": True})
+    fulfill_json(held[2], [])
+    page.get_by_role("button", name="Elegir esta sede").click()
+    page.wait_for_timeout(400)
+    avail = page.locator(".cal-day.is-available").count()
+    result["other_sede_available"] = avail
+    assert avail >= 1, "stale prefetch of previous sede must not win"
+    return result
+
+
 def verify_a15(page) -> dict:
     """Step 2/3 CTAs stay enabled. Clicking without a choice shows the existing error."""
     page.route("**/get_unavailable_dates*", lambda route: route.abort())
@@ -541,7 +589,7 @@ def main() -> int:
         "a7": verify_a7, "a8": verify_a8, "a9": verify_a9,
         "a13": verify_a13,
         "a10": verify_a10, "a11": verify_a11, "a12": verify_a12,
-        "a15": verify_a15,
+        "a15": verify_a15, "a17": verify_a17,
     }.get(args.defect)
     if fn is None:
         print(f"unknown defect {args.defect}", file=sys.stderr)

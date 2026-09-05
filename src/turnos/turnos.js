@@ -41,6 +41,7 @@
     monthUnavailable: false,
     loadFailed: false,
     hours: [],
+    monthFetch: null,
     patient: { firstName: "", lastName: "", email: "", phone: "", notes: "" }
   };
 
@@ -52,6 +53,7 @@
     sedeError: document.getElementById("sede-error"),
     ctaSede: document.getElementById("cta-sede"),
     dayContext: document.getElementById("day-context"),
+    calendar: document.getElementById("calendar"),
     calMonth: document.getElementById("cal-month"),
     calGrid: document.getElementById("cal-grid"),
     calPrev: document.getElementById("cal-prev"),
@@ -139,6 +141,29 @@
     });
   }
 
+  function monthKey(sede, y, m) {
+    return String(sede.providerId) + ":" + String(sede.serviceId) + ":" + y + ":" + m;
+  }
+
+  function beginMonthFetch(sede, y, m) {
+    var key = monthKey(sede, y, m);
+    var entry = { key: key, settled: false, promise: null };
+    entry.promise = getUnavailable(sede, y, m).then(function (result) {
+      entry.settled = true;
+      return result;
+    }, function (err) {
+      entry.settled = true;
+      throw err;
+    });
+    state.monthFetch = entry;
+    return entry;
+  }
+
+  function prefetchSelectedSede() {
+    var t = todayAR();
+    beginMonthFetch(state.sede, t.y, t.m);
+  }
+
   function getHours(sede, date) {
     var body = new URLSearchParams({
       service_id: String(sede.serviceId),
@@ -200,9 +225,11 @@
       map.addEventListener("click", function (e) { e.stopPropagation(); });
       card.appendChild(map);
       function selectSede() {
+        var changed = state.sede.id !== sede.id;
         state.sede = sede;
         state.date = null;
         state.hour = null;
+        if (changed || !state.monthFetch) prefetchSelectedSede();
         renderSedes();
       }
       card.addEventListener("click", selectSede);
@@ -236,8 +263,9 @@
     var n = daysInMonth(state.year, state.month);
     var blocked = {};
     state.unavailable.forEach(function (d) { blocked[d] = true; });
-    var total = firstDow + n;
-    var cells = Math.ceil(total / 7) * 7;
+    var cells = 42;
+    els.calendar.removeAttribute("aria-busy");
+    els.calGrid.removeAttribute("aria-busy");
     for (var i = 0; i < cells; i++) {
       var dayNum = i - firstDow + 1;
       var cell = document.createElement("button");
@@ -287,13 +315,39 @@
     }
   }
 
+  function renderCalendarSkeleton() {
+    els.calendar.setAttribute("aria-busy", "true");
+    els.calGrid.setAttribute("aria-busy", "true");
+    els.calMonth.textContent = titleCaseMonth(state.year, state.month);
+    els.calGrid.innerHTML = "";
+    for (var i = 0; i < 42; i++) {
+      var cell = document.createElement("span");
+      cell.className = "cal-day is-skeleton";
+      cell.setAttribute("aria-hidden", "true");
+      els.calGrid.appendChild(cell);
+    }
+    els.calLegend.textContent = "Los días en gris no tienen turno.";
+  }
+
   function loadMonth() {
     var requestedYear = state.year;
     var requestedMonth = state.month;
+    var requestedSedeId = state.sede.id;
+    var key = monthKey(state.sede, requestedYear, requestedMonth);
+    var pending = state.monthFetch;
+    var request;
+    if (pending && pending.key === key) {
+      request = pending.promise;
+    } else {
+      request = getUnavailable(state.sede, requestedYear, requestedMonth);
+    }
+    state.monthFetch = null;
     els.dayError.hidden = true;
-    els.calLegend.textContent = "Cargando disponibilidad…";
-    return getUnavailable(state.sede, requestedYear, requestedMonth).then(function (result) {
-      if (state.year !== requestedYear || state.month !== requestedMonth) return;
+    if (!(pending && pending.key === key && pending.settled)) {
+      renderCalendarSkeleton();
+    }
+    return request.then(function (result) {
+      if (state.year !== requestedYear || state.month !== requestedMonth || state.sede.id !== requestedSedeId) return;
       state.loadFailed = false;
       state.monthUnavailable = result.monthUnavailable;
       state.unavailable = result.dates;
@@ -309,7 +363,7 @@
       renderCalendar();
       updateDayContext();
     }).catch(function () {
-      if (state.year !== requestedYear || state.month !== requestedMonth) return;
+      if (state.year !== requestedYear || state.month !== requestedMonth || state.sede.id !== requestedSedeId) return;
       state.unavailable = [];
       state.monthUnavailable = false;
       state.loadFailed = true;
@@ -700,7 +754,12 @@
 
   document.querySelectorAll("[data-back]").forEach(function (btn) {
     btn.addEventListener("click", function () {
-      setStep(Math.max(1, state.step - 1));
+      var next = Math.max(1, state.step - 1);
+      if (next === 1) {
+        state.monthFetch = null;
+        prefetchSelectedSede();
+      }
+      setStep(next);
     });
   });
 
@@ -719,4 +778,5 @@
 
   renderSedes();
   setStep(1);
+  prefetchSelectedSede();
 })();
