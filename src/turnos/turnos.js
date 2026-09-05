@@ -390,7 +390,13 @@
     node.textContent = "";
   }
 
-  var FIELD_DOM = { first: "first-name", last: "last-name", email: "email", phone: "phone" };
+  var FIELD_DOM = {
+    first: "first-name",
+    last: "last-name",
+    email: "email",
+    "email-confirm": "email-confirm",
+    phone: "phone"
+  };
   var PHONE_LETTERS_MSG = "El celular no puede tener letras. Ejemplo: 11 5555 5555";
 
   function fieldWrap(id) { return document.getElementById("field-" + id); }
@@ -412,6 +418,57 @@
   function hasLetters(s) { return /[A-Za-zÁÉÍÓÚÜÑáéíóúüñ]/.test(s); }
   function phoneDigits(s) { return (s.match(/\d/g) || []).join(""); }
 
+  var KNOWN_DOMAINS = [
+    "gmail.com", "hotmail.com", "outlook.com", "yahoo.com.ar", "yahoo.com", "live.com", "icloud.com"
+  ];
+
+  function levenshtein(a, b) {
+    var prev = [];
+    var i, j;
+    for (j = 0; j <= b.length; j++) prev[j] = j;
+    for (i = 1; i <= a.length; i++) {
+      var row = [i];
+      for (j = 1; j <= b.length; j++) {
+        var cost = a.charAt(i - 1) === b.charAt(j - 1) ? 0 : 1;
+        row[j] = Math.min(prev[j] + 1, row[j - 1] + 1, prev[j - 1] + cost);
+      }
+      prev = row;
+    }
+    return prev[b.length];
+  }
+
+  function suggestEmail(email) {
+    var at = email.lastIndexOf("@");
+    if (at < 1) return null;
+    var local = email.slice(0, at);
+    var domain = email.slice(at + 1).toLowerCase();
+    if (!domain || KNOWN_DOMAINS.indexOf(domain) !== -1) return null;
+    var best = null;
+    var bestDist = 3;
+    KNOWN_DOMAINS.forEach(function (known) {
+      var dist = levenshtein(domain, known);
+      if (dist > 0 && dist < bestDist) {
+        bestDist = dist;
+        best = known;
+      }
+    });
+    return best ? local + "@" + best : null;
+  }
+
+  function renderEmailSuggest() {
+    var box = document.getElementById("email-suggest");
+    var email = document.getElementById("email").value.trim();
+    var suggested = messageEmail(email) ? null : suggestEmail(email);
+    if (!suggested) {
+      box.hidden = true;
+      return;
+    }
+    document.getElementById("email-suggest-lead").textContent = "¿Quisiste decir ";
+    document.getElementById("email-suggest-accept").textContent = suggested;
+    document.getElementById("email-suggest-tail").textContent = "?";
+    box.hidden = false;
+  }
+
   function messageFirst(v) { return v ? "" : "Escribí tu nombre."; }
   function messageLast(v) { return v ? "" : "Escribí tu apellido."; }
   function messageEmail(v) {
@@ -419,6 +476,12 @@
     if (v.indexOf("@") === -1 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) {
       return "El email no es válido. Ejemplo: maria.lopez@gmail.com";
     }
+    return "";
+  }
+  function messageEmailConfirm(v) {
+    var email = document.getElementById("email").value.trim();
+    if (!v) return "Confirmá tu email.";
+    if (v.toLowerCase() !== email.toLowerCase()) return "Los emails no coinciden.";
     return "";
   }
   function messagePhone(v) {
@@ -432,6 +495,7 @@
     "first-name": { key: "first", read: function () { return document.getElementById("first-name").value.trim(); }, message: messageFirst },
     "last-name": { key: "last", read: function () { return document.getElementById("last-name").value.trim(); }, message: messageLast },
     "email": { key: "email", read: function () { return document.getElementById("email").value.trim(); }, message: messageEmail },
+    "email-confirm": { key: "email-confirm", read: function () { return document.getElementById("email-confirm").value.trim(); }, message: messageEmailConfirm },
     "phone": { key: "phone", read: function () { return document.getElementById("phone").value.trim(); }, message: messagePhone }
   };
 
@@ -577,9 +641,27 @@
     setStep(5);
   });
 
-  ["first-name", "last-name", "email", "phone"].forEach(function (id) {
+  ["first-name", "last-name", "email", "email-confirm", "phone"].forEach(function (id) {
     var input = document.getElementById(id);
-    input.addEventListener("blur", function () { validateField(id); });
+    input.addEventListener("blur", function () {
+      validateField(id);
+      if (id === "email") renderEmailSuggest();
+    });
+  });
+
+  document.getElementById("email").addEventListener("input", renderEmailSuggest);
+  document.getElementById("email-suggest-accept").addEventListener("click", function () {
+    var suggested = this.textContent;
+    var emailInput = document.getElementById("email");
+    var confirmInput = document.getElementById("email-confirm");
+    var old = emailInput.value;
+    emailInput.value = suggested;
+    if (!confirmInput.value.trim() || confirmInput.value.trim() === old.trim()) {
+      confirmInput.value = suggested;
+    }
+    document.getElementById("email-suggest").hidden = true;
+    validateField("email");
+    validateField("email-confirm");
   });
 
   document.getElementById("phone").addEventListener("input", function () {

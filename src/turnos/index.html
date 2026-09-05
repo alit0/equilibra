@@ -89,6 +89,12 @@
         <input id="email" name="email" type="email" inputmode="email" autocomplete="email" required maxlength="120" aria-describedby="email-hint email-error">
         <p class="field-error" id="email-error" hidden></p>
       </div>
+      <p class="email-suggest" id="email-suggest" hidden role="status"><span id="email-suggest-lead"></span><button type="button" class="text-link" id="email-suggest-accept"></button><span id="email-suggest-tail"></span></p>
+      <div class="field" id="field-email-confirm">
+        <label for="email-confirm">Confirmá tu email</label>
+        <input id="email-confirm" name="emailConfirm" type="email" inputmode="email" autocomplete="off" required maxlength="120" aria-describedby="email-confirm-error">
+        <p class="field-error" id="email-confirm-error" hidden></p>
+      </div>
       <div class="field" id="field-phone">
         <label for="phone">Teléfono</label>
         <input id="phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" required maxlength="24" aria-describedby="phone-error">

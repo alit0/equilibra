@@ -129,6 +129,9 @@ def go_to_confirm(page):
     page.fill("#first-name", "Maria")
     page.fill("#last-name", "Lopez")
     page.fill("#email", "maria.lopez@gmail.com")
+    confirm = page.locator("#email-confirm")
+    if confirm.count():
+        confirm.fill("maria.lopez@gmail.com")
     page.fill("#phone", "11 5555 5555")
     page.get_by_role("button", name="Ir a confirmar").click()
     page.wait_for_selector("#title-5")
@@ -259,6 +262,51 @@ def box_gap(above, below) -> float:
     return b["y"] - (a["y"] + a["height"])
 
 
+def verify_a8(page) -> dict:
+    """Email must be typed twice; domain typos suggest without blocking."""
+    go_to_datos(page)
+    page.fill("#first-name", "Arturo")
+    page.fill("#last-name", "Lopez")
+    page.fill("#email", "arturo@sarasa.com")
+    page.fill("#email-confirm", "arturo@otro.com")
+    page.fill("#phone", "11 5555 5555")
+    page.locator("#notes").click()
+    page.wait_for_timeout(150)
+    page.screenshot(path=str(SHOTS / "a8-mismatch-390.png"), full_page=True)
+    mismatch_visible = page.locator("#email-confirm-error").is_visible()
+    mismatch_invalid = page.locator("#email-confirm").get_attribute("aria-invalid")
+    result = {"mismatch_visible": mismatch_visible, "mismatch_invalid": mismatch_invalid}
+    assert mismatch_visible, "mismatch did not show a written error"
+    assert mismatch_invalid == "true"
+
+    page.fill("#email-confirm", "arturo@sarasa.com")
+    page.locator("#notes").click()
+    page.wait_for_timeout(150)
+    assert page.locator("#email-confirm-error").is_hidden()
+    assert page.locator("#email-suggest").is_hidden(), "sarasa.com must not be treated as a typo"
+
+    page.fill("#email", "maria@gmial.com")
+    page.locator("#email-confirm").click()
+    page.wait_for_timeout(200)
+    page.screenshot(path=str(SHOTS / "a8-suggest-390.png"), full_page=True)
+    suggest = page.locator("#email-suggest")
+    assert suggest.is_visible(), "gmial.com should suggest gmail.com"
+    suggest_text = suggest.inner_text()
+    assert "gmail.com" in suggest_text.lower()
+    page.locator("#email-suggest-accept").click()
+    assert page.locator("#email").input_value() == "maria@gmail.com"
+    result["after_accept"] = page.locator("#email").input_value()
+    result["suggest_text"] = suggest_text
+
+    page.fill("#email", "arturo@sarasa.com")
+    page.fill("#email-confirm", "arturo@sarasa.com")
+    page.get_by_role("button", name="Ir a confirmar").click()
+    page.wait_for_selector("#title-5", timeout=5000)
+    result["custom_domain_allowed"] = True
+    page.screenshot(path=str(SHOTS / "a8-custom-ok-390.png"), full_page=True)
+    return result
+
+
 def verify_a7(page) -> dict:
     """Notes field must not sit flush against the confirm CTA. Use panel 16px stack gap."""
     go_to_datos(page)
@@ -336,7 +384,7 @@ def main() -> int:
     fn = {
         "1": verify_d1, "2": verify_d2, "3": verify_d3,
         "4": verify_d4, "5": verify_d5, "6": verify_d6, "7": verify_d7,
-        "a7": verify_a7,
+        "a7": verify_a7, "a8": verify_a8,
     }.get(args.defect)
     if fn is None:
         print(f"unknown defect {args.defect}", file=sys.stderr)
