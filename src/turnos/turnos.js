@@ -42,6 +42,7 @@
     loadFailed: false,
     hours: [],
     monthFetch: null,
+    hoursFetch: null,
     patient: { firstName: "", lastName: "", email: "", phone: "", notes: "" }
   };
 
@@ -185,6 +186,29 @@
     });
   }
 
+  function hoursKey(sede, date) {
+    return String(sede.providerId) + ":" + String(sede.serviceId) + ":" + date;
+  }
+
+  function beginHoursFetch(sede, date) {
+    var key = hoursKey(sede, date);
+    var entry = { key: key, settled: false, promise: null };
+    entry.promise = getHours(sede, date).then(function (result) {
+      entry.settled = true;
+      return result;
+    }, function (err) {
+      entry.settled = true;
+      throw err;
+    });
+    state.hoursFetch = entry;
+    return entry;
+  }
+
+  function prefetchSelectedDay() {
+    if (!state.date) return;
+    beginHoursFetch(state.sede, state.date);
+  }
+
   function setStep(n) {
     state.step = n;
     var labels = {
@@ -229,6 +253,7 @@
         state.sede = sede;
         state.date = null;
         state.hour = null;
+        state.hoursFetch = null;
         if (changed || !state.monthFetch) prefetchSelectedSede();
         renderSedes();
       }
@@ -290,8 +315,10 @@
         if (state.date === key) cell.classList.add("is-selected");
         cell.addEventListener("click", function (picked) {
           return function () {
+            var changed = state.date !== picked;
             state.date = picked;
             state.hour = null;
+            if (changed || !state.hoursFetch) prefetchSelectedDay();
             clearError(els.dayError);
             renderCalendar();
             updateDayContext();
@@ -403,17 +430,29 @@
 
   function loadHours() {
     var requestedDate = state.date;
+    var requestedSedeId = state.sede.id;
+    var key = hoursKey(state.sede, requestedDate);
+    var pending = state.hoursFetch;
+    var request;
+    if (pending && pending.key === key) {
+      request = pending.promise;
+    } else {
+      request = getHours(state.sede, requestedDate);
+    }
+    state.hoursFetch = null;
     els.hourError.hidden = true;
     els.hourContext.textContent = formatLong(state.date) + " · " + state.sede.name;
-    els.hours.innerHTML = "<p class=\"empty\">Cargando horarios…</p>";
-    return getHours(state.sede, requestedDate).then(function (hours) {
-      if (state.date !== requestedDate) return;
+    if (!(pending && pending.key === key && pending.settled)) {
+      els.hours.innerHTML = "<p class=\"empty\">Cargando horarios…</p>";
+    }
+    return request.then(function (hours) {
+      if (state.date !== requestedDate || state.sede.id !== requestedSedeId) return;
       state.hours = hours;
       if (state.hour && hours.indexOf(state.hour) === -1) state.hour = null;
       if (!state.hour && hours[0]) state.hour = hours[0];
       renderHours();
     }).catch(function () {
-      if (state.date !== requestedDate) return;
+      if (state.date !== requestedDate || state.sede.id !== requestedSedeId) return;
       state.hours = [];
       els.hours.innerHTML = "";
       showError(els.hourError, "No pudimos cargar los horarios. Reintentá.");
@@ -644,6 +683,7 @@
     state.month = t.m;
     state.date = null;
     state.hour = null;
+    state.hoursFetch = null;
     setStep(2);
     loadMonth();
   });
@@ -652,12 +692,14 @@
     state.month -= 1;
     if (state.month < 1) { state.month = 12; state.year -= 1; }
     state.date = null;
+    state.hoursFetch = null;
     loadMonth();
   });
   els.calNext.addEventListener("click", function () {
     state.month += 1;
     if (state.month > 12) { state.month = 1; state.year += 1; }
     state.date = null;
+    state.hoursFetch = null;
     loadMonth();
   });
 
@@ -757,6 +799,7 @@
       var next = Math.max(1, state.step - 1);
       if (next === 1) {
         state.monthFetch = null;
+        state.hoursFetch = null;
         prefetchSelectedSede();
       }
       setStep(next);
