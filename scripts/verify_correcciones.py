@@ -115,6 +115,38 @@ def verify_d2(page) -> dict:
     return result
 
 
+def verify_d4(page) -> dict:
+    """Empty hours copy is for patients; a hours-fetch failure must not render empty-state."""
+    page.route("**/get_available_hours*", lambda route: fulfill_json(route, []))
+    go_to_calendar(page)
+    page.wait_for_selector(".cal-day.is-available", timeout=15000)
+    page.get_by_role("button", name="Reservar este día").click()
+    page.wait_for_selector("#hours-empty", timeout=15000)
+    page.screenshot(path=str(SHOTS / "d4-empty-hours.png"), full_page=True)
+    empty = page.locator("#hours-empty").inner_text()
+    hint = page.locator("#hour-hint").inner_text()
+    body = page.locator("body").inner_text()
+    result = {"empty": empty, "hint": hint}
+    assert "error de red" not in body.lower()
+    assert "elegí otro día" in empty.lower() or "elegi otro dia" in empty.lower()
+    page.unroute("**/get_available_hours*")
+
+    page.get_by_role("button", name="Volver atrás").click()
+    page.route("**/get_available_hours*", lambda route: route.abort())
+    page.get_by_role("button", name="Reservar este día").click()
+    page.wait_for_selector("#hour-error", state="visible", timeout=15000)
+    page.screenshot(path=str(SHOTS / "d4-hours-error.png"), full_page=True)
+    hours_text = page.locator("#hours").inner_text()
+    hour_error = page.locator("#hour-error").inner_text()
+    result["hours_on_error"] = hours_text
+    result["hour_error"] = hour_error
+    assert page.locator("#hours-empty").count() == 0
+    assert "este día no tiene horarios" not in hours_text.lower()
+    assert "error de red" not in page.locator("body").inner_text().lower()
+    assert "cargar" in hour_error.lower()
+    return result
+
+
 def verify_d3(page) -> dict:
     """A hung fetch must surface the calendar error after ~10-12s, not hang."""
     page.route("**/get_unavailable_dates*", lambda route: None)
@@ -169,7 +201,7 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--defect", required=True)
     args = parser.parse_args()
-    fn = {"1": verify_d1, "2": verify_d2, "3": verify_d3}.get(args.defect)
+    fn = {"1": verify_d1, "2": verify_d2, "3": verify_d3, "4": verify_d4}.get(args.defect)
     if fn is None:
         print(f"unknown defect {args.defect}", file=sys.stderr)
         return 2

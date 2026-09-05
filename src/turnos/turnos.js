@@ -326,9 +326,9 @@
       var empty = document.createElement("p");
       empty.className = "empty";
       empty.id = "hours-empty";
-      empty.textContent = "No hay horarios para este día.";
+      empty.textContent = "Este día no tiene horarios disponibles. Elegí otro día.";
       els.hours.appendChild(empty);
-      els.hourHint.textContent = "Un día sin horarios no es un error de red.";
+      els.hourHint.textContent = "Turnos de 30 minutos.";
       els.ctaHour.disabled = true;
       return;
     }
@@ -365,7 +365,8 @@
     }).catch(function () {
       if (state.date !== requestedDate) return;
       state.hours = [];
-      renderHours();
+      els.hours.innerHTML = "";
+      els.ctaHour.disabled = true;
       showError(els.hourError, "No pudimos cargar los horarios. Reintentá.");
     });
   }
