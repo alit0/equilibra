@@ -125,7 +125,7 @@ h1 {
   cursor: pointer;
   color: var(--ink);
 }
-.text-link { min-height: 0; color: var(--green-dark); }
+.text-link { color: var(--green-dark); }
 
 .sedes {
   border: 0;
@@ -458,6 +458,14 @@ h1 {
 }
 
 .checks { display: flex; flex-direction: column; gap: 4px; }
+.check-row-wrap {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0 6px;
+  min-height: 48px;
+}
+.check-row-wrap .check-row { width: auto; }
 .check-row {
   display: flex;
   align-items: center;

@@ -112,15 +112,21 @@
       <p class="pay-alt">Si no llega, mirá en spam o escribinos por WhatsApp.</p>
     </aside>
     <div class="checks">
-      <label class="check-row" id="field-terms">
-        <input type="checkbox" id="terms" name="terms" required aria-describedby="terms-error">
-        <span>Leí y acepto los <button type="button" class="text-link" data-open="terms-dialog">Términos y Condiciones</button></span>
-      </label>
+      <div class="check-row-wrap">
+        <label class="check-row" id="field-terms">
+          <input type="checkbox" id="terms" name="terms" required aria-describedby="terms-error">
+          <span>Leí y acepto los</span>
+        </label>
+        <button type="button" class="text-link" data-open="terms-dialog">Términos y Condiciones</button>
+      </div>
       <p class="field-error" id="terms-error" hidden></p>
-      <label class="check-row" id="field-privacy">
-        <input type="checkbox" id="privacy" name="privacy" required aria-describedby="privacy-error">
-        <span>Leí y acepto la <button type="button" class="text-link" data-open="privacy-dialog">Política de Privacidad</button></span>
-      </label>
+      <div class="check-row-wrap">
+        <label class="check-row" id="field-privacy">
+          <input type="checkbox" id="privacy" name="privacy" required aria-describedby="privacy-error">
+          <span>Leí y acepto la</span>
+        </label>
+        <button type="button" class="text-link" data-open="privacy-dialog">Política de Privacidad</button>
+      </div>
       <p class="field-error" id="privacy-error" hidden></p>
     </div>
     <p class="field-error" id="confirm-error" hidden></p>
@@ -131,8 +137,8 @@
   </section>
 </main>
 
-<dialog id="terms-dialog" class="legal">
-  <h2>Términos y Condiciones</h2>
+<dialog id="terms-dialog" class="legal" aria-labelledby="terms-dialog-title">
+  <h2 id="terms-dialog-title">Términos y Condiciones</h2>
   <p>Al reservar un turno en Equilibra aceptás estas condiciones:</p>
   <ol>
     <li>La reserva online confirma una solicitud de turno sujeta a disponibilidad y confirmación del equipo.</li>
@@ -146,8 +152,8 @@
   <form method="dialog"><button class="cta cta-dialog" type="submit">Cerrar</button></form>
 </dialog>
 
-<dialog id="privacy-dialog" class="legal">
-  <h2>Política de Privacidad</h2>
+<dialog id="privacy-dialog" class="legal" aria-labelledby="privacy-dialog-title">
+  <h2 id="privacy-dialog-title">Política de Privacidad</h2>
   <p><strong>Responsable:</strong> Equilibra.</p>
   <p><strong>Contacto:</strong> soyequilibra@gmail.com · https://soyequilibra.com.ar</p>
   <p><strong>Datos que recolectamos:</strong> nombre, apellido, email, teléfono y, si los completás, domicilio, ciudad, código postal y notas del turno.</p>

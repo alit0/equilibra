@@ -124,6 +124,50 @@ def go_to_datos(page):
     page.wait_for_selector("#first-name")
 
 
+def go_to_confirm(page):
+    go_to_datos(page)
+    page.fill("#first-name", "Maria")
+    page.fill("#last-name", "Lopez")
+    page.fill("#email", "maria.lopez@gmail.com")
+    page.fill("#phone", "11 5555 5555")
+    page.get_by_role("button", name="Ir a confirmar").click()
+    page.wait_for_selector("#title-5")
+
+
+def verify_d6(page) -> dict:
+    """Legal buttons live outside the checkbox label, have a 44px target, dialogs are named."""
+    go_to_confirm(page)
+    nested = page.locator("label button").count()
+    terms_box = page.locator("[data-open='terms-dialog']").bounding_box()
+    privacy_box = page.locator("[data-open='privacy-dialog']").bounding_box()
+    terms_checked_before = page.locator("#terms").is_checked()
+    page.locator("[data-open='terms-dialog']").click()
+    page.screenshot(path=str(SHOTS / "d6-terms-dialog.png"), full_page=True)
+    terms_checked_after = page.locator("#terms").is_checked()
+    terms_dialog = page.locator("#terms-dialog")
+    terms_labelled = terms_dialog.get_attribute("aria-labelledby")
+    page.locator("#terms-dialog button").click()
+    page.locator("[data-open='privacy-dialog']").click()
+    privacy_dialog = page.locator("#privacy-dialog")
+    privacy_labelled = privacy_dialog.get_attribute("aria-labelledby")
+    page.screenshot(path=str(SHOTS / "d6-privacy-dialog.png"), full_page=True)
+    result = {
+        "nested_label_buttons": nested,
+        "terms_height": terms_box["height"] if terms_box else None,
+        "privacy_height": privacy_box["height"] if privacy_box else None,
+        "terms_toggled": terms_checked_before != terms_checked_after,
+        "terms_labelledby": terms_labelled,
+        "privacy_labelledby": privacy_labelled,
+    }
+    assert nested == 0, "legal button is still nested inside a label"
+    assert terms_box and terms_box["height"] >= 44, terms_box
+    assert privacy_box and privacy_box["height"] >= 44, privacy_box
+    assert not result["terms_toggled"], "opening terms toggled the checkbox"
+    assert terms_labelled and page.locator("#" + terms_labelled).count() == 1
+    assert privacy_labelled and page.locator("#" + privacy_labelled).count() == 1
+    return result
+
+
 def verify_d5(page) -> dict:
     """Blurring one field must not validate untouched fields. Submit still validates all."""
     go_to_datos(page)
@@ -245,7 +289,10 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--defect", required=True)
     args = parser.parse_args()
-    fn = {"1": verify_d1, "2": verify_d2, "3": verify_d3, "4": verify_d4, "5": verify_d5}.get(args.defect)
+    fn = {
+        "1": verify_d1, "2": verify_d2, "3": verify_d3,
+        "4": verify_d4, "5": verify_d5, "6": verify_d6,
+    }.get(args.defect)
     if fn is None:
         print(f"unknown defect {args.defect}", file=sys.stderr)
         return 2

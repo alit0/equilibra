@@ -624,6 +624,7 @@
   document.querySelectorAll("[data-open]").forEach(function (btn) {
     btn.addEventListener("click", function (e) {
       e.preventDefault();
+      e.stopPropagation();
       document.getElementById(btn.getAttribute("data-open")).showModal();
     });
   });
