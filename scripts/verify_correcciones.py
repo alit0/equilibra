@@ -262,6 +262,22 @@ def box_gap(above, below) -> float:
     return b["y"] - (a["y"] + a["height"])
 
 
+def verify_a9(page) -> dict:
+    """Step 5 copy states the 24h payment window. No timer or expiry logic."""
+    go_to_confirm(page)
+    note = page.locator(".pay-note").inner_text()
+    page.screenshot(path=str(SHOTS / "a9-24h-copy-390.png"), full_page=True)
+    result = {"pay_note": note}
+    assert "24 horas" in note.lower()
+    assert "libera" in note.lower()
+    assert page.locator(".countdown, [data-expires], #deposit-timer").count() == 0
+    src = page.request.get(BASE + "/turnos/turnos.js").text()
+    assert "24 * 60" not in src and "86400000" not in src
+    assert "setInterval" not in src
+    result["no_timer_in_js"] = "setInterval" not in src
+    return result
+
+
 def verify_a8(page) -> dict:
     """Email must be typed twice; domain typos suggest without blocking."""
     go_to_datos(page)
@@ -384,7 +400,7 @@ def main() -> int:
     fn = {
         "1": verify_d1, "2": verify_d2, "3": verify_d3,
         "4": verify_d4, "5": verify_d5, "6": verify_d6, "7": verify_d7,
-        "a7": verify_a7, "a8": verify_a8,
+        "a7": verify_a7, "a8": verify_a8, "a9": verify_a9,
     }.get(args.defect)
     if fn is None:
         print(f"unknown defect {args.defect}", file=sys.stderr)
