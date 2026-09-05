@@ -363,7 +363,7 @@ def verify_a13(page) -> dict:
     assert "estudio de marcha" in dts_l
     assert seña_row.locator("dd").inner_text().strip() == "$20.000"
     assert eyebrow == "Cómo sigue"
-    assert title == "Te llega un mail con el link para abonar el estudio y dejar el turno confirmado. Tenés 24 horas."
+    assert title == "Te llega un email con el link para abonar el estudio y dejar el turno confirmado. Tenés 24 horas."
     assert alt == "Si no lo ves, fijate en spam o escribinos por WhatsApp."
     assert note.lower().count("24 horas") == 1
     assert "todavía no pagás" not in note.lower() and "todavia no pagas" not in note.lower()
