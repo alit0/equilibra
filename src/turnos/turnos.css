@@ -354,15 +354,37 @@ h1 {
   border-radius: 0;
 }
 .field input::placeholder { color: var(--ink3); }
+.field textarea {
+  width: 100%;
+  min-height: 96px;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  padding: 12px 14px;
+  font-size: 16px;
+  line-height: 1.35;
+  border-radius: 0;
+  resize: none;
+}
+.field textarea::placeholder { color: var(--ink3); }
 .field.is-error input {
   border: 2px solid var(--ember);
   padding: 0 13px;
+}
+.field.is-error textarea {
+  border: 2px solid var(--ember);
+  padding: 11px 13px;
 }
 .field input:focus,
 .field input:focus-visible {
   outline: none;
   border: 2px solid var(--ink);
   padding: 0 13px;
+}
+.field textarea:focus,
+.field textarea:focus-visible {
+  outline: none;
+  border: 2px solid var(--ink);
+  padding: 11px 13px;
 }
 .field.is-error label,
 .field-error {

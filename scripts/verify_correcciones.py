@@ -303,21 +303,29 @@ def verify_a11(page) -> dict:
 
 
 def verify_a12(page) -> dict:
-    """Notes field explains what to write, using the same hint pattern as email."""
+    """Notes copy lives in the placeholder; no hint. Textarea has a descriptive aria-label."""
     go_to_datos(page)
     page.set_viewport_size({"width": 390, "height": 844})
     page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
     label = page.locator("label[for='notes']").text_content().strip()
-    hint = page.locator("#notes-hint").inner_text()
+    tag = page.locator("#notes").evaluate("el => el.tagName")
     placeholder = page.locator("#notes").get_attribute("placeholder")
-    hint_color = page.locator("#notes-hint").evaluate("el => getComputedStyle(el).color")
-    error_color = page.locator("#email-error").evaluate("el => getComputedStyle(el).color")
+    aria = page.locator("#notes").get_attribute("aria-label")
+    hint_count = page.locator("#field-notes .hint").count()
     page.screenshot(path=str(SHOTS / "a12-notes-copy-390.png"), full_page=True)
-    result = {"label": label, "hint": hint, "placeholder": placeholder, "hint_color": hint_color}
+    result = {
+        "label": label,
+        "tag": tag,
+        "placeholder": placeholder,
+        "aria_label": aria,
+        "hint_count": hint_count,
+    }
     assert label == "Contanos algo más (opcional)"
-    assert "dolor" in hint.lower() and "plantillas" in hint.lower()
-    assert placeholder == "Por ejemplo: me duele el talón izquierdo al correr"
-    assert hint_color != error_color
+    assert tag == "TEXTAREA"
+    assert hint_count == 0
+    assert placeholder == "Si tenés dolor en algún punto, una lesión previa, o ya usás plantillas, escribilo acá."
+    assert aria
+    assert "dolor" in aria.lower() and "plantillas" in aria.lower()
     return result
 
 
