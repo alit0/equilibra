@@ -42,6 +42,79 @@ def go_to_calendar(page):
     page.get_by_role("button", name="Elegir esta sede").click()
 
 
+def wait_held(page, held, n, timeout=10):
+    deadline = time.time() + timeout
+    while len(held) < n and time.time() < deadline:
+        page.wait_for_timeout(50)
+    assert len(held) >= n, f"expected {n} held requests, got {len(held)}"
+
+
+def selected_date_of(route) -> str:
+    url = route.request.url
+    if "selected_date=" in url:
+        return url.split("selected_date=")[1].split("&")[0]
+    return route.request.post_data or ""
+
+
+def fulfill_json(route, body):
+    route.fulfill(status=200, content_type="application/json", body=json.dumps(body))
+
+
+def verify_d2(page) -> dict:
+    """Stale month and hour responses must not overwrite the latest request."""
+    held = []
+    page.route("**/get_unavailable_dates*", lambda route: held.append(route))
+    page.goto(BASE + "/turnos/", wait_until="domcontentloaded")
+    page.locator(".sede").nth(0).click()
+    page.get_by_role("button", name="Elegir esta sede").click()
+    wait_held(page, held, 1)
+    page.locator("#cal-next").click()
+    page.locator("#cal-next").click()
+    wait_held(page, held, 3)
+
+    by_month = {}
+    for route in held:
+        date = selected_date_of(route)
+        by_month[date[:7]] = route
+
+    assert "2026-09" in by_month and "2026-11" in by_month, list(by_month.keys())
+    leftover = [r for r in held if r not in (by_month["2026-09"], by_month["2026-11"])]
+    for route in leftover:
+        fulfill_json(route, [])
+    fulfill_json(by_month["2026-11"], [])
+    fulfill_json(by_month["2026-09"], {"is_month_unavailable": True})
+
+    page.wait_for_timeout(400)
+    page.screenshot(path=str(SHOTS / "d2-stale-month.png"), full_page=True)
+    label = page.locator("#cal-month").inner_text()
+    available = page.locator(".cal-day.is-available").count()
+    result = {"month_label": label, "available_after_stale": available}
+    assert "Noviembre 2026" in label, f"stale month won: {label}"
+    assert available >= 1, "stale September unavailable-month overwrote November"
+
+    page.unroute("**/get_unavailable_dates*")
+
+    hours_held = []
+    page.route("**/get_available_hours*", lambda route: hours_held.append(route))
+    page.get_by_role("button", name="Reservar este día").click()
+    wait_held(page, hours_held, 1)
+    page.get_by_role("button", name="Volver atrás").click()
+    page.wait_for_selector(".cal-day.is-available")
+    days = page.locator(".cal-day.is-available")
+    days.nth(min(1, days.count() - 1)).click()
+    page.get_by_role("button", name="Reservar este día").click()
+    wait_held(page, hours_held, 2)
+
+    fulfill_json(hours_held[1], ["18:00"])
+    fulfill_json(hours_held[0], ["08:00", "08:30", "09:00"])
+    page.wait_for_timeout(400)
+    page.screenshot(path=str(SHOTS / "d2-stale-hours.png"), full_page=True)
+    shown = page.locator(".hour").all_inner_texts()
+    result["hours_shown"] = shown
+    assert shown == ["18:00"], f"stale hours won: {shown}"
+    return result
+
+
 def verify_d1(page) -> dict:
     """Fail-closed calendar: aborted month fetch must leave zero bookable days
     and a real retry button."""
@@ -79,7 +152,7 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--defect", required=True)
     args = parser.parse_args()
-    fn = {"1": verify_d1}.get(args.defect)
+    fn = {"1": verify_d1, "2": verify_d2}.get(args.defect)
     if fn is None:
         print(f"unknown defect {args.defect}", file=sys.stderr)
         return 2

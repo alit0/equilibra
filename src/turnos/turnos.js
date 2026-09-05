@@ -283,10 +283,13 @@
   }
 
   function loadMonth() {
+    var requestedYear = state.year;
+    var requestedMonth = state.month;
     els.dayError.hidden = true;
     els.calLegend.textContent = "Cargando disponibilidad…";
     els.ctaDay.disabled = true;
-    return getUnavailable(state.sede, state.year, state.month).then(function (result) {
+    return getUnavailable(state.sede, requestedYear, requestedMonth).then(function (result) {
+      if (state.year !== requestedYear || state.month !== requestedMonth) return;
       state.loadFailed = false;
       state.monthUnavailable = result.monthUnavailable;
       state.unavailable = result.dates;
@@ -302,6 +305,7 @@
       renderCalendar();
       updateDayContext();
     }).catch(function () {
+      if (state.year !== requestedYear || state.month !== requestedMonth) return;
       state.unavailable = [];
       state.monthUnavailable = false;
       state.loadFailed = true;
@@ -342,16 +346,19 @@
   }
 
   function loadHours() {
+    var requestedDate = state.date;
     els.hourError.hidden = true;
     els.hourContext.textContent = formatLong(state.date) + " · " + state.sede.name;
     els.hours.innerHTML = "<p class=\"empty\">Cargando horarios…</p>";
     els.ctaHour.disabled = true;
-    return getHours(state.sede, state.date).then(function (hours) {
+    return getHours(state.sede, requestedDate).then(function (hours) {
+      if (state.date !== requestedDate) return;
       state.hours = hours;
       if (state.hour && hours.indexOf(state.hour) === -1) state.hour = null;
       if (!state.hour && hours[0]) state.hour = hours[0];
       renderHours();
     }).catch(function () {
+      if (state.date !== requestedDate) return;
       state.hours = [];
       renderHours();
       showError(els.hourError, "No pudimos cargar los horarios. Reintentá.");
