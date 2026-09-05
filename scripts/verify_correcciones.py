@@ -115,6 +115,50 @@ def verify_d2(page) -> dict:
     return result
 
 
+def go_to_datos(page):
+    go_to_calendar(page)
+    page.wait_for_selector(".cal-day.is-available", timeout=15000)
+    page.get_by_role("button", name="Reservar este día").click()
+    page.wait_for_selector(".hour", timeout=15000)
+    page.get_by_role("button", name="Elegir este horario").click()
+    page.wait_for_selector("#first-name")
+
+
+def verify_d5(page) -> dict:
+    """Blurring one field must not validate untouched fields. Submit still validates all."""
+    go_to_datos(page)
+    page.fill("#first-name", "Maria")
+    page.locator("#last-name").click()
+    page.wait_for_timeout(200)
+    page.screenshot(path=str(SHOTS / "d5-blur-name.png"), full_page=True)
+    last_shown = page.locator("#last-name-error").is_visible()
+    email_shown = page.locator("#email-error").is_visible()
+    phone_shown = page.locator("#phone-error").is_visible()
+    first_shown = page.locator("#first-name-error").is_visible()
+    result = {
+        "after_name_blur": {
+            "first": first_shown,
+            "last": last_shown,
+            "email": email_shown,
+            "phone": phone_shown,
+        }
+    }
+    assert not last_shown, "blur on name showed last-name error"
+    assert not email_shown, "blur on name showed email error"
+    assert not phone_shown, "blur on name showed phone error"
+    assert not first_shown
+
+    page.get_by_role("button", name="Ir a confirmar").click()
+    page.screenshot(path=str(SHOTS / "d5-submit-all.png"), full_page=True)
+    result["submit_last"] = page.locator("#last-name-error").inner_text()
+    result["submit_email"] = page.locator("#email-error").inner_text()
+    result["submit_phone"] = page.locator("#phone-error").inner_text()
+    assert page.locator("#last-name-error").is_visible()
+    assert page.locator("#email-error").is_visible()
+    assert page.locator("#phone-error").is_visible()
+    return result
+
+
 def verify_d4(page) -> dict:
     """Empty hours copy is for patients; a hours-fetch failure must not render empty-state."""
     page.route("**/get_available_hours*", lambda route: fulfill_json(route, []))
@@ -201,7 +245,7 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--defect", required=True)
     args = parser.parse_args()
-    fn = {"1": verify_d1, "2": verify_d2, "3": verify_d3, "4": verify_d4}.get(args.defect)
+    fn = {"1": verify_d1, "2": verify_d2, "3": verify_d3, "4": verify_d4, "5": verify_d5}.get(args.defect)
     if fn is None:
         print(f"unknown defect {args.defect}", file=sys.stderr)
         return 2

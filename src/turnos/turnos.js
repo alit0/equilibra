@@ -408,44 +408,50 @@
   function hasLetters(s) { return /[A-Za-zÁÉÍÓÚÜÑáéíóúüñ]/.test(s); }
   function phoneDigits(s) { return (s.match(/\d/g) || []).join(""); }
 
+  function messageFirst(v) { return v ? "" : "Escribí tu nombre."; }
+  function messageLast(v) { return v ? "" : "Escribí tu apellido."; }
+  function messageEmail(v) {
+    if (!v) return "Escribí tu email.";
+    if (v.indexOf("@") === -1 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) {
+      return "El email no es válido. Ejemplo:  maria.lopez@gmail.com";
+    }
+    return "";
+  }
+  function messagePhone(v) {
+    if (!v) return "Escribí tu celular.";
+    if (hasLetters(v)) return "El celular no puede tener letras. Ejemplo: 11 5555 5555";
+    if (phoneDigits(v).length < 8) return "El celular es demasiado corto.";
+    return "";
+  }
+
+  var FIELD_VALIDATORS = {
+    "first-name": { key: "first", read: function () { return document.getElementById("first-name").value.trim(); }, message: messageFirst },
+    "last-name": { key: "last", read: function () { return document.getElementById("last-name").value.trim(); }, message: messageLast },
+    "email": { key: "email", read: function () { return document.getElementById("email").value.trim(); }, message: messageEmail },
+    "phone": { key: "phone", read: function () { return document.getElementById("phone").value.trim(); }, message: messagePhone }
+  };
+
+  function validateField(domId) {
+    var spec = FIELD_VALIDATORS[domId];
+    if (!spec) return "";
+    var msg = spec.message(spec.read());
+    setFieldError(spec.key, msg);
+    return msg;
+  }
+
   function validateDatos() {
-    var first = document.getElementById("first-name").value.trim();
-    var last = document.getElementById("last-name").value.trim();
-    var email = document.getElementById("email").value.trim();
-    var phone = document.getElementById("phone").value.trim();
-    var notes = document.getElementById("notes").value.trim();
     var errors = [];
-
-    if (!first) {
-      setFieldError("first", "Escribí tu nombre.");
-      errors.push({ id: "first-name", msg: "Escribí tu nombre." });
-    } else setFieldError("first", "");
-
-    if (!last) {
-      setFieldError("last", "Escribí tu apellido.");
-      errors.push({ id: "last-name", msg: "Escribí tu apellido." });
-    } else setFieldError("last", "");
-
-    if (!email) {
-      setFieldError("email", "Escribí tu email.");
-      errors.push({ id: "email", msg: "Escribí tu email." });
-    } else if (email.indexOf("@") === -1 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      setFieldError("email", "El email no es válido. Ejemplo:  maria.lopez@gmail.com");
-      errors.push({ id: "email", msg: "El email no es válido." });
-    } else setFieldError("email", "");
-
-    if (!phone) {
-      setFieldError("phone", "Escribí tu celular.");
-      errors.push({ id: "phone", msg: "Escribí tu celular." });
-    } else if (hasLetters(phone)) {
-      setFieldError("phone", "El celular no puede tener letras. Ejemplo: 11 5555 5555");
-      errors.push({ id: "phone", msg: "El celular no puede tener letras." });
-    } else if (phoneDigits(phone).length < 8) {
-      setFieldError("phone", "El celular es demasiado corto.");
-      errors.push({ id: "phone", msg: "El celular es demasiado corto." });
-    } else setFieldError("phone", "");
-
-    state.patient = { firstName: first, lastName: last, email: email, phone: phone, notes: notes };
+    Object.keys(FIELD_VALIDATORS).forEach(function (domId) {
+      var msg = validateField(domId);
+      if (msg) errors.push({ id: domId, msg: msg });
+    });
+    state.patient = {
+      firstName: FIELD_VALIDATORS["first-name"].read(),
+      lastName: FIELD_VALIDATORS["last-name"].read(),
+      email: FIELD_VALIDATORS["email"].read(),
+      phone: FIELD_VALIDATORS["phone"].read(),
+      notes: document.getElementById("notes").value.trim()
+    };
     return errors;
   }
 
@@ -569,7 +575,7 @@
 
   ["first-name", "last-name", "email", "phone"].forEach(function (id) {
     var input = document.getElementById(id);
-    input.addEventListener("blur", function () { validateDatos(); });
+    input.addEventListener("blur", function () { validateField(id); });
   });
 
   document.getElementById("phone").addEventListener("input", function () {
