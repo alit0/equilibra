@@ -149,6 +149,23 @@ class EaClientTransportTests(unittest.TestCase):
         self.server.route("GET", "/api/v1/availabilities", data)
         self.assertEqual(self.client.get_available_hours(5, 1, "2026-09-21"), ["08:00", "08:30"])
 
+    def test_endless_full_pages_fail_closed_not_hang_or_paginate_partial(self):
+        # An upstream that answers a full page on every request (ignoring
+        # `page`) must NOT hang the worker nor quietly return a truncated
+        # "complete" count: a paginated read is a quota control and fails
+        # closed (raises) once the page cap is hit.
+        def always_full(path, method, query, body, h):
+            page_rows = [{"id": i + int(query.get("page", "1")) * 1000, "start": "2099-01-01 08:00:00"} for i in range(100)]
+            return from_json(page_rows, handler=h)
+
+        self.server.route("GET", "/api/v1/appointments", always_full)
+        capped = EaClient(token=TOKEN, base_url=self.api_base, timeout=1.0, max_pages=5)
+        with self.assertRaises(EaUnavailable):
+            capped.list_customer_appointments(7)
+        # The cap made the read stop after exactly max_pages round-trips, not hang.
+        appt_requests = [r for r in self.server.record if r["method"] == "GET" and r["path"] == "/api/v1/appointments"]
+        self.assertEqual(len(appt_requests), 5)
+
 
 if __name__ == "__main__":
     unittest.main()

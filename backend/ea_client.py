@@ -45,6 +45,13 @@ EA_BASE_URL = os.environ.get("EQUILIBRA_EA_BASE_URL", "https://turnos.allitto.co
 # response may contain, so reads still loop until a short page is returned.
 _PAGE_SIZE = 100
 
+# Hard cap on how many pages a collection read may fetch. A sane EA terminates
+# on a short page quickly, so this is an orders-of-magnitude safety net against
+# an upstream that ignores `page` and answers a full page forever. Reaching the
+# cap is NOT "no more rows": the read is a quota control and must fail closed
+# (raise) rather than silently hand back a truncated, under-counted list.
+_MAX_PAGES = 1000
+
 
 class _NoRedirect(urllib.request.HTTPRedirectHandler):
     """Never follow a redirect.
@@ -67,10 +74,17 @@ class EaUnavailable(Exception):
 class EaClient:
     """Standard-library HTTP adapter over the Easy!Appointments v1 REST API."""
 
-    def __init__(self, token: str | None = None, base_url: str | None = None, timeout: float = 12.0) -> None:
+    def __init__(
+        self,
+        token: str | None = None,
+        base_url: str | None = None,
+        timeout: float = 12.0,
+        max_pages: int = _MAX_PAGES,
+    ) -> None:
         self._token = (token if token is not None else os.environ.get("EQUILIBRA_EA_API_TOKEN", "")).strip()
         self._base_url = (base_url or EA_BASE_URL).rstrip("/")
         self._timeout = timeout
+        self._max_pages = max_pages
         # One opener per client that never follows redirects.
         self._opener = urllib.request.build_opener(_NoRedirect)
 
@@ -131,6 +145,14 @@ class EaClient:
             all_rows.extend(page_rows)
             if len(page_rows) < _PAGE_SIZE:
                 return all_rows
+            if page >= self._max_pages:
+                # Still a full page at the cap: EA is not advancing. This is an
+                # incomplete count, never "no more rows" — the quota read fails
+                # closed so an under-count can't let a 4th turn slip through.
+                raise EaUnavailable(
+                    f"EA never returned a short page on GET {path} "
+                    f"(failed closed after {self._max_pages} pages)"
+                )
             page += 1
 
     # ---- domain-facing helpers --------------------------------------------
