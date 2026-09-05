@@ -134,6 +134,24 @@ def go_to_confirm(page):
     page.wait_for_selector("#title-5")
 
 
+def verify_d7(page) -> dict:
+    """Email example has a single space; phone letter-error is one shared sentence."""
+    go_to_datos(page)
+    page.fill("#email", "sinarroba")
+    page.locator("#phone").click()
+    page.wait_for_timeout(150)
+    email_err = page.locator("#email-error").text_content()
+    page.fill("#phone", "abcdefghi")
+    page.wait_for_timeout(150)
+    phone_err = page.locator("#phone-error").text_content()
+    page.screenshot(path=str(SHOTS / "d7-minors.png"), full_page=True)
+    result = {"email_err": email_err, "phone_err": phone_err}
+    assert "Ejemplo:  " not in email_err
+    assert "Ejemplo: maria.lopez@gmail.com" in email_err
+    assert phone_err == "El celular no puede tener letras. Ejemplo: 11 5555 5555"
+    return result
+
+
 def verify_d6(page) -> dict:
     """Legal buttons live outside the checkbox label, have a 44px target, dialogs are named."""
     go_to_confirm(page)
@@ -291,7 +309,7 @@ def main() -> int:
     args = parser.parse_args()
     fn = {
         "1": verify_d1, "2": verify_d2, "3": verify_d3,
-        "4": verify_d4, "5": verify_d5, "6": verify_d6,
+        "4": verify_d4, "5": verify_d5, "6": verify_d6, "7": verify_d7,
     }.get(args.defect)
     if fn is None:
         print(f"unknown defect {args.defect}", file=sys.stderr)

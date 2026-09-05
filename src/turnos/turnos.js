@@ -390,11 +390,15 @@
     node.textContent = "";
   }
 
+  var FIELD_DOM = { first: "first-name", last: "last-name", email: "email", phone: "phone" };
+  var PHONE_LETTERS_MSG = "El celular no puede tener letras. Ejemplo: 11 5555 5555";
+
   function fieldWrap(id) { return document.getElementById("field-" + id); }
   function setFieldError(id, msg) {
     var wrap = fieldWrap(id);
-    var input = document.getElementById(id === "first" ? "first-name" : id === "last" ? "last-name" : id);
-    var err = document.getElementById((id === "first" ? "first-name" : id === "last" ? "last-name" : id) + "-error");
+    var inputId = FIELD_DOM[id] || id;
+    var input = document.getElementById(inputId);
+    var err = document.getElementById(inputId + "-error");
     if (wrap) wrap.classList.toggle("is-error", !!msg);
     if (input) {
       input.setAttribute("aria-invalid", msg ? "true" : "false");
@@ -413,13 +417,13 @@
   function messageEmail(v) {
     if (!v) return "Escribí tu email.";
     if (v.indexOf("@") === -1 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) {
-      return "El email no es válido. Ejemplo:  maria.lopez@gmail.com";
+      return "El email no es válido. Ejemplo: maria.lopez@gmail.com";
     }
     return "";
   }
   function messagePhone(v) {
     if (!v) return "Escribí tu celular.";
-    if (hasLetters(v)) return "El celular no puede tener letras. Ejemplo: 11 5555 5555";
+    if (hasLetters(v)) return PHONE_LETTERS_MSG;
     if (phoneDigits(v).length < 8) return "El celular es demasiado corto.";
     return "";
   }
@@ -580,7 +584,7 @@
 
   document.getElementById("phone").addEventListener("input", function () {
     if (hasLetters(this.value)) {
-      setFieldError("phone", "El celular no puede tener letras. Ejemplo: 11 5555 5555");
+      setFieldError("phone", PHONE_LETTERS_MSG);
     } else if (this.value.trim()) {
       setFieldError("phone", "");
     }
