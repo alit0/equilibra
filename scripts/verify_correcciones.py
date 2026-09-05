@@ -347,6 +347,46 @@ def verify_a10(page) -> dict:
     return result
 
 
+def verify_a15(page) -> dict:
+    """Step 2/3 CTAs stay enabled. Clicking without a choice shows the existing error."""
+    page.route("**/get_unavailable_dates*", lambda route: route.abort())
+    go_to_calendar(page)
+    page.wait_for_selector("#day-error", state="visible", timeout=15000)
+    cta_day = page.locator("#cta-day")
+    assert cta_day.is_enabled()
+    assert page.locator(".cal-day.is-available").count() == 0
+    assert page.locator(".cal-day:not([disabled])").count() == 0
+    cta_day.click()
+    day_err = page.locator("#day-error")
+    page.screenshot(path=str(SHOTS / "a15-cta-day-390.png"), full_page=True)
+    result = {
+        "cta_day_enabled": True,
+        "day_error": day_err.inner_text(),
+        "day_role": day_err.get_attribute("role"),
+        "blocked_days": page.locator(".cal-day[disabled]").count(),
+    }
+    assert "elegí un día" in day_err.inner_text().lower() or "elegi un dia" in day_err.inner_text().lower()
+    assert day_err.get_attribute("role") == "alert"
+
+    page.unroute("**/get_unavailable_dates*")
+    page.route("**/get_available_hours*", lambda route: fulfill_json(route, []))
+    go_to_calendar(page)
+    page.wait_for_selector(".cal-day.is-available", timeout=15000)
+    page.get_by_role("button", name="Reservar este día").click()
+    page.wait_for_selector("#hours-empty", timeout=15000)
+    cta_hour = page.locator("#cta-hour")
+    assert cta_hour.is_enabled()
+    cta_hour.click()
+    hour_err = page.locator("#hour-error")
+    page.screenshot(path=str(SHOTS / "a15-cta-hour-390.png"), full_page=True)
+    result["cta_hour_enabled"] = True
+    result["hour_error"] = hour_err.inner_text()
+    result["hour_role"] = hour_err.get_attribute("role")
+    assert "elegí un horario" in hour_err.inner_text().lower() or "elegi un horario" in hour_err.inner_text().lower()
+    assert hour_err.get_attribute("role") == "alert"
+    return result
+
+
 def verify_a13(page) -> dict:
     """Step 5 copy: study label, how-it-follows block, 24h once. No layout change."""
     go_to_confirm(page)
@@ -501,6 +541,7 @@ def main() -> int:
         "a7": verify_a7, "a8": verify_a8, "a9": verify_a9,
         "a13": verify_a13,
         "a10": verify_a10, "a11": verify_a11, "a12": verify_a12,
+        "a15": verify_a15,
     }.get(args.defect)
     if fn is None:
         print(f"unknown defect {args.defect}", file=sys.stderr)

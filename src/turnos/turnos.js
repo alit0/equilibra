@@ -264,6 +264,7 @@
           return function () {
             state.date = picked;
             state.hour = null;
+            clearError(els.dayError);
             renderCalendar();
             updateDayContext();
           };
@@ -274,7 +275,6 @@
     els.calLegend.textContent = state.monthUnavailable
       ? "Este mes no tiene turnos disponibles. Los días en gris no tienen turno."
       : "Los días en gris no tienen turno.";
-    els.ctaDay.disabled = !state.date;
   }
 
   function updateDayContext() {
@@ -292,7 +292,6 @@
     var requestedMonth = state.month;
     els.dayError.hidden = true;
     els.calLegend.textContent = "Cargando disponibilidad…";
-    els.ctaDay.disabled = true;
     return getUnavailable(state.sede, requestedYear, requestedMonth).then(function (result) {
       if (state.year !== requestedYear || state.month !== requestedMonth) return;
       state.loadFailed = false;
@@ -329,7 +328,6 @@
       empty.textContent = "Este día no tiene horarios disponibles. Elegí otro día.";
       els.hours.appendChild(empty);
       els.hourHint.textContent = "Turnos de 30 minutos.";
-      els.ctaHour.disabled = true;
       return;
     }
     els.hourHint.textContent = "Turnos de 30 minutos.";
@@ -342,12 +340,11 @@
       btn.textContent = h;
       btn.addEventListener("click", function () {
         state.hour = h;
+        clearError(els.hourError);
         renderHours();
-        els.ctaHour.disabled = false;
       });
       els.hours.appendChild(btn);
     });
-    els.ctaHour.disabled = !state.hour;
   }
 
   function loadHours() {
@@ -355,7 +352,6 @@
     els.hourError.hidden = true;
     els.hourContext.textContent = formatLong(state.date) + " · " + state.sede.name;
     els.hours.innerHTML = "<p class=\"empty\">Cargando horarios…</p>";
-    els.ctaHour.disabled = true;
     return getHours(state.sede, requestedDate).then(function (hours) {
       if (state.date !== requestedDate) return;
       state.hours = hours;
@@ -366,12 +362,12 @@
       if (state.date !== requestedDate) return;
       state.hours = [];
       els.hours.innerHTML = "";
-      els.ctaHour.disabled = true;
       showError(els.hourError, "No pudimos cargar los horarios. Reintentá.");
     });
   }
 
   function showError(node, msg, retry) {
+    node.setAttribute("role", "alert");
     node.hidden = false;
     node.textContent = "";
     node.appendChild(document.createTextNode(msg));
@@ -384,6 +380,7 @@
       btn.addEventListener("click", retry);
       node.appendChild(btn);
     }
+    announce(msg);
   }
   function clearError(node) {
     node.hidden = true;
