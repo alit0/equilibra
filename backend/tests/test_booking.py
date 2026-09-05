@@ -73,6 +73,17 @@ class AliasTests(unittest.TestCase):
         b = build_alias("x@gmail.com", "maria      ruiz ")
         self.assertEqual(a, b)
 
+    def test_alias_sharing_slug_prefix_not_truncation_collision(self):
+        # Two patients whose slugs share their entire *truncatable* prefix and
+        # differ only after the RFC 5321 cap would collapse under a naive
+        # `[:62]` truncation (hallazgo 8 / despacho segundo filtro). Build the
+        # alias over a long local-part so the name barely fits, then assert the
+        # hash-based alias still keeps them apart.
+        long_email = "m" * 57 + ".@gmail.com"
+        a = build_alias(long_email, "Ana Perez")
+        b = build_alias(long_email, "Ana Gomez")
+        self.assertNotEqual(a, b)
+
 
 class NormaliseAndMailboxTests(unittest.TestCase):
     def test_mailbox_key_strips_plus_tag(self):
@@ -307,6 +318,48 @@ class RegressionPostExploitationTests(unittest.TestCase):
         art_midnight = _dt.datetime(2026, 9, 6, 20, 0, tzinfo=_dt.timezone.utc)
         self.assertEqual(_as_clinic_naive(art_midnight).date().isoformat(), "2026-09-06")
 
+    def test_book_uses_clinic_zone_for_quota_not_utc_rollover(self):
+        # Regression for the second review: app.py/booking must treat "now" in
+        # the *clinic's* wall clock. Feed a UTC instant that is Tuesday 01:00
+        # UTC == Monday 22:00 in Buenos Aires. A naive-UTC clock would think it
+        # is Tuesday and would no longer treat the three *Monday-evening* turns
+        # (22:30/22:45/23:00 ART) as future, letting a 4th turn through. With the
+        # clinic conversion those Monday turns still count toward the cap of 3,
+        # so this booking must be rejected.
+        gw = FakeGateway()
+        monday = "2026-09-07"
+        now_utc = _dt.datetime(2026, 9, 8, 1, 0, 0, tzinfo=_dt.timezone.utc)  # Monday 22:00 ART
+        from datetime import timedelta
+
+        # Each +tag folds to the real inbox ana@gmail.com (Gmail-equivalent dots
+        # would be stripped differently, so aliases use +tags).
+        seed = [
+            ("ana@gmail.com", "Ana", "22:30"),
+            ("ana+juan@gmail.com", "Juan", "22:45"),
+            ("ana+maria@gmail.com", "Maria", "23:00"),
+        ]
+        for email, name, hour in seed:
+            cid = gw.add_customer({"first_name": name, "last_name": "Familia", "email": email})["id"]
+            # Three future turns later ON that Monday, in clinic wall time
+            # (2026-09-07 22:30/22:45/23:00 == 2026-09-08 01:30/01:45/02:00 UTC).
+            gw.add_appointment(customer_id=cid, start=f"{monday} {hour}:00")
+        # A 4th booking for the same real mailbox (Rosa, brand-new alias) on a
+        # later clinic date would push the mailbox past 3.
+        later = _dt.date(2026, 9, 14).isoformat()
+        gw.set_available(later, ["08:00"])
+        book_payload = _payload(
+            selected_date=later,
+            selected_hour="08:00",
+            customer={**_payload()["customer"], "email": "ana@gmail.com", "first_name": "Rosa", "last_name": "Gomez"},
+        )
+        customers_before = {k for k in gw.customers}
+        with self.assertRaises(BookingError) as cm:
+            book(gw, book_payload, now=now_utc)
+        self.assertEqual(cm.exception.code, "too_many_future_appointments")
+        # None of the mailbox turns may already exist for Rosa, and no orphan
+        # customer was created because the quota check precedes any create.
+        self.assertEqual({k for k in gw.customers}, customers_before)
+
     # ---- hallazgo 1: TOCTOU pre-create re-check + post rollback ------------
     def test_slot_that_disappears_after_check_is_rejected_before_post(self):
         # Availability lists 08:00 on the first read, but the slot is gone on
@@ -360,6 +413,55 @@ class RegressionPostExploitationTests(unittest.TestCase):
         self.assertEqual(cm.exception.code, "requested_hour_is_unavailable")
         self.assertEqual(len(gw.appointments), 1)
 
+    # ---- hallazgo 1 (segundo filtro) / A: rollback DELETE that fails ---------
+    def test_rollback_delete_failing_still_fails_closed_and_logs_id(self):
+        # A competing appointment is detected right after our POST and we try to
+        # roll our own row back, but the DELETE call throws (e.g. EA unreachable
+        # on that request). The booking must NOT report success, must raise a
+        # controlled BookingError (not a raw transport exception), and must log
+        # the appointment_id an operator needs to reconcile the two rows by hand.
+        from backend.ea_client import EaUnavailable
+
+        deletes: list[int] = []
+
+        class FlakyDelete(FakeGateway):
+            def delete_appointment(self, appointment_id):
+                deletes.append(int(appointment_id))
+                raise EaUnavailable("EA DELETE unreachable on test")
+
+        gw = FlakyDelete()
+        gw.set_available("2026-09-21", ["08:00", "09:00", "10:00"])
+        base_cust = _payload()["customer"]
+        mother = {
+            **_payload(),
+            "customer": {
+                **base_cust,
+                "email": "maria@gmail.com",
+                "first_name": "María",
+                "last_name": "López",
+            },
+        }
+        book(gw, mother)
+        child = {
+            **_payload(),
+            "customer": {
+                **base_cust,
+                "email": "maria@gmail.com",
+                "first_name": "Juan",
+                "last_name": "López",
+            },
+        }
+        with self.assertLogs("backend.booking", level="ERROR") as logs:
+            with self.assertRaises(BookingError) as cm:
+                book(gw, child)
+        self.assertEqual(cm.exception.code, "requested_hour_is_unavailable")
+        # The delete was *attempted* but the orphan could not be removed, so both
+        # rows persist; the leftover must be recorded, never silently ignored.
+        self.assertEqual(deletes, [5001])
+        self.assertEqual(len(gw.appointments), 2)
+        self.assertTrue(any("5001" in line for line in logs.output))
+        self.assertTrue(any("manual cleanup required" in line for line in logs.output))
+
     # ---- hallazgo 5: no orphan customer when the day rule rejects ----------
     def test_second_turn_same_day_rejects_without_new_customer(self):
         gw = FakeGateway()
@@ -370,6 +472,39 @@ class RegressionPostExploitationTests(unittest.TestCase):
             book(gw, _payload(selected_hour="09:00"))
         self.assertEqual(cm.exception.code, "patient_already_booked_that_day")
         self.assertEqual({c for c in gw.customers}, customer_ids_before)
+
+    # ---- hallazgo 5 (segundo filtro) / E: new alias + full quota -> no create
+    def test_new_alias_full_mailbox_quota_creates_no_customer(self):
+        # The order guarantee (quota BEFORE creating any customer, despacho
+        # equilibra-014 re-review #5) bites precisely when the caller is a
+        # patient that mailbox has NEVER seen: EA has 3 future turns already, and
+        # resolving this brand-new person would create a fresh +alias customer.
+        # That customer must NOT exist after the rejection.
+        gw = FakeGateway()
+        date = _future_date()
+
+        # Seed a full mailbox: root + two +alias customers, 3 future turns total.
+        for email, name in (
+            ("maria@gmail.com", "María"),
+            ("maria+juan@gmail.com", "Juan"),
+            ("maria+pepe@gmail.com", "Pepe"),
+        ):
+            rec = gw.add_customer({"first_name": name, "last_name": "Lopez", "email": email})
+            gw.add_appointment(customer_id=rec["id"], start="2099-01-05 09:00:00")
+        before = {k for k in gw.customers}
+        gw.set_available(date, ["08:00"])
+
+        # A NEW name on that mailbox: resolve would mint maria+rosagomez@gmail.com.
+        book_payload = _payload(
+            selected_date=date,
+            customer={**_payload()["customer"], "email": "maria@gmail.com", "first_name": "Rosa", "last_name": "Gomez"},
+        )
+        with self.assertRaises(BookingError) as cm:
+            book(gw, book_payload)
+        self.assertEqual(cm.exception.code, "too_many_future_appointments")
+        # The orphan that a create-before-check order would leave must not appear.
+        self.assertEqual({k for k in gw.customers}, before)
+        self.assertEqual(len(gw.appointments), 3)
 
     # ---- hallazgo 6: name cannot inject an extra notes line ----------------
     def test_notes_collapse_whitespace_in_name(self):
@@ -397,11 +532,21 @@ class RegressionPostExploitationTests(unittest.TestCase):
         self.assertEqual(cm.exception.code, "invalid_request")
 
     def test_service_id_float_not_coerced(self):
+        # 1.0 would be a *valid* pair (service 1 / provider 5) if the code
+        # coerced floats with int(): 1.5 is ambiguous because ALLOWED_PAIRS.get
+        # rejects it even without coercion. Using 1.0 proves the validator
+        # rejects the *type*, and that coercing would actually have booked.
         gw = FakeGateway()
-        gw.set_available("2026-09-21", ["09:00"])
+        gw.set_available("2026-09-21", ["08:00"])
+        cust = {**_payload()["customer"], "phone_number": "11 5555 2222"}
         with self.assertRaises(BookingError) as cm:
-            book(gw, _payload(service_id=1.5, selected_hour="09:00"))
+            book(gw, _payload(service_id=1.0, customer=cust, selected_hour="08:00"))
         self.assertEqual(cm.exception.code, "invalid_request")
+        self.assertEqual(cm.exception.fields, ["service_id"])
+        # A type-coercion bug would have progressed to create the appointment;
+        # assert the calendar and contacts stayed untouched.
+        self.assertEqual(gw.appointments, {})
+        self.assertEqual(gw.customers, {})
 
     def test_phone_must_be_string(self):
         gw = FakeGateway()
