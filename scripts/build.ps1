@@ -336,6 +336,23 @@ $htaccessDest = Join-Path $DistRoot '.htaccess'
 Copy-Item -LiteralPath $htaccessPath -Destination $htaccessDest -Force
 $copiedFiles.Add([pscustomobject]@{ Rel = '.htaccess'; Size = (Get-Item -LiteralPath $htaccessDest).Length })
 
+# /turnos is a standalone page, not referenced from template.html.
+$turnosSrc = Join-Path $SourceRoot 'src/turnos'
+$turnosDest = Join-Path $DistRoot 'turnos'
+if (-not (Test-Path -LiteralPath $turnosSrc)) {
+    Fail-Build "Required input not found: $turnosSrc"
+}
+New-Item -ItemType Directory -Path $turnosDest -Force | Out-Null
+$turnosExts = $allowedExts + @('.html')
+Get-ChildItem -LiteralPath $turnosSrc -File | ForEach-Object {
+    $ext = $_.Extension.ToLowerInvariant()
+    if ($turnosExts -notcontains $ext) {
+        Fail-Build "Disallowed asset extension in src/turnos: $($_.Name)"
+    }
+    Copy-Item -LiteralPath $_.FullName -Destination (Join-Path $turnosDest $_.Name) -Force
+    $copiedFiles.Add([pscustomobject]@{ Rel = ('turnos/' + $_.Name); Size = $_.Length })
+}
+
 # Self-hosted webfonts and their OFL licenses live in a subfolder of src/turnos,
 # which the top-level asset loops do not descend into; copy that folder explicitly.
 $turnosFontsSrc = Join-Path $SourceRoot 'src/turnos/fonts'
@@ -365,6 +382,7 @@ foreach ($f in $forbidden) {
 # 14. sitemap.xml
 $sitemapEntries = New-Object System.Collections.Generic.List[string]
 $sitemapEntries.Add( ('  <url><loc>{0}</loc></url>' -f ([string]$site.site_url)) )
+$sitemapEntries.Add( ('  <url><loc>{0}turnos</loc></url>' -f ([string]$site.site_url)) )
 $sitemapXml = @(
     '<?xml version="1.0" encoding="UTF-8"?>'
     '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
