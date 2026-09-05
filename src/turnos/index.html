@@ -101,8 +101,9 @@
         <p class="field-error" id="phone-error" hidden></p>
       </div>
       <div class="field" id="field-notes">
-        <label for="notes">Nota (opcional)</label>
-        <input id="notes" name="notes" type="text" autocomplete="off" maxlength="280" placeholder="Algo que debamos saber">
+        <label for="notes">Contanos algo más (opcional)</label>
+        <p class="hint" id="notes-hint">Si tenés dolor en algún punto, una lesión previa, o ya usás plantillas, escribilo acá.</p>
+        <input id="notes" name="notes" type="text" autocomplete="off" maxlength="280" placeholder="Por ejemplo: me duele el talón izquierdo al correr" aria-describedby="notes-hint">
       </div>
       <button type="submit" class="cta" id="cta-datos">Ir a confirmar</button>
     </form>

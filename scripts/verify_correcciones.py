@@ -302,6 +302,25 @@ def verify_a11(page) -> dict:
     return result
 
 
+def verify_a12(page) -> dict:
+    """Notes field explains what to write, using the same hint pattern as email."""
+    go_to_datos(page)
+    page.set_viewport_size({"width": 390, "height": 844})
+    page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
+    label = page.locator("label[for='notes']").text_content().strip()
+    hint = page.locator("#notes-hint").inner_text()
+    placeholder = page.locator("#notes").get_attribute("placeholder")
+    hint_color = page.locator("#notes-hint").evaluate("el => getComputedStyle(el).color")
+    error_color = page.locator("#email-error").evaluate("el => getComputedStyle(el).color")
+    page.screenshot(path=str(SHOTS / "a12-notes-copy-390.png"), full_page=True)
+    result = {"label": label, "hint": hint, "placeholder": placeholder, "hint_color": hint_color}
+    assert label == "Contanos algo más (opcional)"
+    assert "dolor" in hint.lower() and "plantillas" in hint.lower()
+    assert placeholder == "Por ejemplo: me duele el talón izquierdo al correr"
+    assert hint_color != error_color
+    return result
+
+
 def verify_a10(page) -> dict:
     """Step 4 fields must read as separate units. One form gap, using --pad (24px)."""
     go_to_datos(page)
@@ -459,7 +478,7 @@ def main() -> int:
         "1": verify_d1, "2": verify_d2, "3": verify_d3,
         "4": verify_d4, "5": verify_d5, "6": verify_d6, "7": verify_d7,
         "a7": verify_a7, "a8": verify_a8, "a9": verify_a9,
-        "a10": verify_a10, "a11": verify_a11,
+        "a10": verify_a10, "a11": verify_a11, "a12": verify_a12,
     }.get(args.defect)
     if fn is None:
         print(f"unknown defect {args.defect}", file=sys.stderr)
