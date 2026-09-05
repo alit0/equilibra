@@ -347,20 +347,33 @@ def verify_a10(page) -> dict:
     return result
 
 
-def verify_a9(page) -> dict:
-    """Step 5 copy states the 24h payment window. No timer or expiry logic."""
+def verify_a13(page) -> dict:
+    """Step 5 copy: study label, how-it-follows block, 24h once. No layout change."""
     go_to_confirm(page)
+    dts = page.locator(".summary dt").all_inner_texts()
+    seña_row = page.locator(".summary-row").filter(has_text="$20.000")
     note = page.locator(".pay-note").inner_text()
-    page.screenshot(path=str(SHOTS / "a9-24h-copy-390.png"), full_page=True)
-    result = {"pay_note": note}
-    assert "24 horas" in note.lower()
-    assert "libera" in note.lower()
-    assert page.locator(".countdown, [data-expires], #deposit-timer").count() == 0
-    src = page.request.get(BASE + "/turnos/turnos.js").text()
-    assert "24 * 60" not in src and "86400000" not in src
-    assert "setInterval" not in src
-    result["no_timer_in_js"] = "setInterval" not in src
+    eyebrow = page.locator(".pay-eyebrow").text_content().strip()
+    title = page.locator(".pay-title").text_content().strip()
+    alt = page.locator(".pay-alt").text_content().strip()
+    page.screenshot(path=str(SHOTS / "a13-paso5-copy-390.png"), full_page=True)
+    result = {"dts": dts, "eyebrow": eyebrow, "title": title, "alt": alt, "pay_note": note}
+    dts_l = [dt.strip().lower() for dt in dts]
+    assert "seña" not in dts_l and "sena" not in dts_l
+    assert "estudio de marcha" in dts_l
+    assert seña_row.locator("dd").inner_text().strip() == "$20.000"
+    assert eyebrow == "Cómo sigue"
+    assert title == "Te llega un mail con el link para abonar el estudio y dejar el turno confirmado. Tenés 24 horas."
+    assert alt == "Si no lo ves, fijate en spam o escribinos por WhatsApp."
+    assert note.lower().count("24 horas") == 1
+    assert "todavía no pagás" not in note.lower() and "todavia no pagas" not in note.lower()
+    assert "libera" not in note.lower()
     return result
+
+
+def verify_a9(page) -> dict:
+    """24h window lives once in the step 5 how-it-follows copy. No timer."""
+    return verify_a13(page)
 
 
 def verify_a8(page) -> dict:
@@ -486,6 +499,7 @@ def main() -> int:
         "1": verify_d1, "2": verify_d2, "3": verify_d3,
         "4": verify_d4, "5": verify_d5, "6": verify_d6, "7": verify_d7,
         "a7": verify_a7, "a8": verify_a8, "a9": verify_a9,
+        "a13": verify_a13,
         "a10": verify_a10, "a11": verify_a11, "a12": verify_a12,
     }.get(args.defect)
     if fn is None:

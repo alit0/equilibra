@@ -560,7 +560,7 @@
       row("Fecha", formatLong(state.date), 2) +
       row("Hora", state.hour, 3) +
       row("Duración", "30 minutos") +
-      row("Seña", "$20.000");
+      row("Estudio de marcha", "$20.000");
     els.summary.querySelectorAll(".change").forEach(function (btn) {
       btn.addEventListener("click", function () {
         setStep(Number(btn.getAttribute("data-goto")));
