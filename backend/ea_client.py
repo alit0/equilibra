@@ -59,6 +59,15 @@ _MAX_PAGES = 1000
 # would keep the patient "in another zone" and mail would flip back to UTC.
 CUSTOMER_TIMEZONE = "America/Buenos_Aires"
 
+# Language we hand to EA when *we* create a patient. It must be the exact
+# string EA uses for its own translation packs and for every other user in
+# `ea_users` ("spanish", NOT "es"/"es-AR"): the mail subject is built with
+# `config(['language' => $customer['language']])`, which loads
+# `application/language/<language>/translations_lang.php`, so a spelling that
+# has no matching folder would keep the confirmation subject in the column
+# default (english) instead of castellano.
+CUSTOMER_LANGUAGE = "spanish"
+
 
 class _NoRedirect(urllib.request.HTTPRedirectHandler):
     """Never follow a redirect.
@@ -216,6 +225,11 @@ class EaClient:
                 # default (UTC), so the patient lands in a different zone than
                 # the provider and every confirmation mail gets shifted +3h.
                 "timezone": CUSTOMER_TIMEZONE,
+                # Same root cause as timezone (EQUILIBRA-014): without an
+                # explicit language EA falls back to the column default
+                # (english), so the confirmation mail subject comes out in
+                # English for every patient we create.
+                "language": CUSTOMER_LANGUAGE,
             },
         )
         return self._customer_from_api(created)

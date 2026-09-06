@@ -12,7 +12,7 @@ from __future__ import annotations
 import json
 import unittest
 
-from backend.ea_client import CUSTOMER_TIMEZONE, EaClient, EaUnavailable
+from backend.ea_client import CUSTOMER_LANGUAGE, CUSTOMER_TIMEZONE, EaClient, EaUnavailable
 
 from backend.tests.ea_server import EaTestServer, from_json, hang_forever, paginate_list
 
@@ -199,6 +199,41 @@ class EaClientTransportTests(unittest.TestCase):
         sent = posts[0]["body"] or {}
         self.assertEqual(sent.get("timezone"), CUSTOMER_TIMEZONE)
         self.assertEqual(sent.get("timezone"), "America/Buenos_Aires")
+
+    def test_create_customer_sends_language_spanish(self):
+        # EQUILIBRA-014: our POST /customers used to omit `language`, so EA's
+        # column default (english) parked every patient we create in English and
+        # their confirmation mail subject came out in `english`. The fix must
+        # send the exact string EA uses for its translation pack ("spanish",
+        # not "es"/"es-AR"), otherwise the subject stays English.
+        def echo(path, method, query, body, h):
+            return from_json(
+                {
+                    "id": 14,
+                    "firstName": body.get("firstName"),
+                    "lastName": body.get("lastName"),
+                    "email": body.get("email"),
+                    "phone": body.get("phone"),
+                    "language": body.get("language"),
+                },
+                handler=h,
+            )
+
+        self.server.route("POST", "/api/v1/customers", echo)
+        self.client.create_customer(
+            {
+                "first_name": "Claudia",
+                "last_name": "Prueba",
+                "email": "claudia@example.com",
+                "phone_number": "+549",
+            }
+        )
+
+        posts = [r for r in self.server.record if r["method"] == "POST" and r["path"] == "/api/v1/customers"]
+        self.assertEqual(len(posts), 1)
+        sent = posts[0]["body"] or {}
+        self.assertEqual(sent.get("language"), CUSTOMER_LANGUAGE)
+        self.assertEqual(sent.get("language"), "spanish")
 
 
 if __name__ == "__main__":
