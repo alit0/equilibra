@@ -14,3 +14,15 @@ openspec/
 final_footprint.svg
 foot.jpg
 orthopedist_10450418.png
+
+# Scratch de verificacion: scripts que los agentes escriben para medir o sacar
+# capturas durante una tarea. No son parte del sitio ni del build.
+__pycache__/
+dist-preview/
+deploy/
+scripts/cors_probe*
+scripts/verify_home_inline.py
+scripts/verify_turnos.py
+scripts/verify_reservar_ui.py
+scripts/fake_reservar.py
+scripts/*-shots/
