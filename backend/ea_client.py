@@ -52,6 +52,13 @@ _PAGE_SIZE = 100
 # (raise) rather than silently hand back a truncated, under-counted list.
 _MAX_PAGES = 1000
 
+# Timezone we hand to EA when *we* create a patient. It must be the exact
+# string EA stores for the provider and the iframe customers (checked against
+# `ea_users`), NOT the longer IANA alias: EA compares these strings textually
+# in Notifications to decide whether to convert a mail, so a different spelling
+# would keep the patient "in another zone" and mail would flip back to UTC.
+CUSTOMER_TIMEZONE = "America/Buenos_Aires"
+
 
 class _NoRedirect(urllib.request.HTTPRedirectHandler):
     """Never follow a redirect.
@@ -205,6 +212,10 @@ class EaClient:
                 "email": customer["email"].strip(),
                 "phone": customer.get("phone_number") or "",
                 "notes": customer.get("notes") or "",
+                # Without an explicit timezone EA falls back to the column
+                # default (UTC), so the patient lands in a different zone than
+                # the provider and every confirmation mail gets shifted +3h.
+                "timezone": CUSTOMER_TIMEZONE,
             },
         )
         return self._customer_from_api(created)
