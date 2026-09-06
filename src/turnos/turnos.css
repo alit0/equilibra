@@ -414,6 +414,20 @@ body.turnos-root {
   border: 2px solid var(--ink);
   padding: 11px 13px;
 }
+/* A field with an error keeps its ember border while focused, and gains a
+   focus ring, so the invalid state does not flash away on focus. */
+.turnos-root .field.is-error input:focus, .turnos-root .field.is-error input:focus-visible {
+  border: 2px solid var(--ember);
+  padding: 0 13px;
+  outline: 2px solid var(--ink);
+  outline-offset: 3px;
+}
+.turnos-root .field.is-error textarea:focus, .turnos-root .field.is-error textarea:focus-visible {
+  border: 2px solid var(--ember);
+  padding: 11px 13px;
+  outline: 2px solid var(--ink);
+  outline-offset: 3px;
+}
 .turnos-root .field.is-error label, .turnos-root .field-error {
   color: #A45223; /* 4.52:1 on #F4E7D4 */
 }
