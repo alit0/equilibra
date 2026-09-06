@@ -249,7 +249,10 @@
     });
     var title = document.getElementById("title-" + n);
     if (title) title.focus({ preventScroll: true });
-    if (!silent) scrollFormIntoView();
+    if (!silent) {
+      announce("Paso " + n + " de 5. " + title.textContent);
+      scrollFormIntoView();
+    }
   }
 
   // Bring the FORM back into view on a step change - never the document top.
@@ -978,7 +981,6 @@
       return;
     }
     setStep(4);
-    document.getElementById("first-name").focus();
   });
 
   els.form.addEventListener("submit", function (e) {
