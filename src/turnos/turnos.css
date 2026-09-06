@@ -305,9 +305,9 @@ body.turnos-root {
   cursor: pointer;
 }
 .turnos-root .cal-day.is-selected {
-  background: var(--green);
+  background: var(--green-dark);
   color: #fff;
-  border-color: var(--green);
+  border-color: var(--green-dark);
   font-weight: 500;
 }
 .turnos-root .cal-day:disabled { color: var(--muted); }
