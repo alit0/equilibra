@@ -8,6 +8,7 @@
         content/site.json    (canonical SEO/entity values)
         content/faqs.json    (approved FAQ Q&A)
         src/template.html    (sole HTML template with BUILD markers)
+        src/turnos/form.html (booking-form markup, injected into home and /turnos/)
         tracked asset files  (svg, png, ico, apple-touch-icon)
     Writes:
         dist/index.html
@@ -44,6 +45,25 @@ function Fail-Build {
     exit 1
 }
 
+function Inject-TurnosForm {
+    param(
+        [Parameter(Mandatory)][string]$Html,
+        [Parameter(Mandatory)][string]$FormHtml
+    )
+    $start = '<!--BUILD:TURNOS_FORM_START-->'
+    $end = '<!--BUILD:TURNOS_FORM_END-->'
+    $startIdx = $Html.IndexOf($start, [StringComparison]::Ordinal)
+    $endIdx = $Html.IndexOf($end, [StringComparison]::Ordinal)
+    if ($startIdx -lt 0 -or $endIdx -lt 0) {
+        Fail-Build "TURNOS_FORM markers missing (start=$startIdx end=$endIdx)"
+    }
+    if ($endIdx -le $startIdx) {
+        Fail-Build "TURNOS_FORM markers are malformed (end precedes start)"
+    }
+    $region = $start + "`n" + $FormHtml.TrimEnd() + "`n" + $end
+    return $Html.Substring(0, $startIdx) + $region + $Html.Substring($endIdx + $end.Length)
+}
+
 function Write-LfUtf8 {
     param(
         [Parameter(Mandatory)][string]$Path,
@@ -68,15 +88,18 @@ $templatePath = Join-Path $SourceRoot 'src/template.html'
 $htaccessPath = Join-Path $SourceRoot 'src/.htaccess'
 $siteJsonPath = Join-Path $SourceRoot 'content/site.json'
 $faqsJsonPath = Join-Path $SourceRoot 'content/faqs.json'
-foreach ($p in @($templatePath, $htaccessPath, $siteJsonPath, $faqsJsonPath)) {
+$turnosFormPath = Join-Path $SourceRoot 'src/turnos/form.html'
+foreach ($p in @($templatePath, $htaccessPath, $siteJsonPath, $faqsJsonPath, $turnosFormPath)) {
     if (-not (Test-Path -LiteralPath $p)) { Fail-Build "Required input not found: $p" }
 }
 $template = [System.IO.File]::ReadAllText($templatePath, [System.Text.UTF8Encoding]::new($false))
+$turnosForm = [System.IO.File]::ReadAllText($turnosFormPath, [System.Text.UTF8Encoding]::new($false))
 
 # 2. Validate BUILD markers (each exactly once, end after start)
 $markerPairs = @(
     @{ Start = '<!--BUILD:JSONLD_START-->'; End = '<!--BUILD:JSONLD_END-->'; Name = 'JSONLD' },
-    @{ Start = '<!--BUILD:FAQ_HTML_START-->'; End = '<!--BUILD:FAQ_HTML_END-->'; Name = 'FAQ_HTML' }
+    @{ Start = '<!--BUILD:FAQ_HTML_START-->'; End = '<!--BUILD:FAQ_HTML_END-->'; Name = 'FAQ_HTML' },
+    @{ Start = '<!--BUILD:TURNOS_FORM_START-->'; End = '<!--BUILD:TURNOS_FORM_END-->'; Name = 'TURNOS_FORM' }
 )
 foreach ($m in $markerPairs) {
     $startCount = ([regex]::Matches($template, [regex]::Escape($m.Start))).Count
@@ -282,6 +305,9 @@ if ($divCloseIdx -lt 0) { Fail-Build "Could not locate closing </div> after <div
 $faqBlockNew = '<div class="faq">' + "`n" + $faqHtml + ' </div>'
 $template = $template.Substring(0, $divOpenIdx) + $faqBlockNew + $template.Substring($divCloseIdx + '</div>'.Length)
 
+# 10b. Inject the shared booking-form markup (single source: src/turnos/form.html)
+$template = Inject-TurnosForm -Html $template -FormHtml $turnosForm
+
 # 11. Parity check: rendered FAQ answers vs JSON-LD answers
 $renderedAnswers = New-Object System.Collections.Generic.List[string]
 $renderedPattern = '(?s)<details>\s*<summary>[^<]*</summary>\s*<p>([^<]*)</p>\s*</details>'
@@ -310,6 +336,10 @@ $referenced = New-Object System.Collections.Generic.HashSet[string]
 foreach ($m in $refMatches) {
     $rel = $m.Groups[1].Value
     if ($rel.StartsWith('/')) { $rel = $rel.TrimStart('/') }
+    # /turnos assets live under src/turnos/ and are copied by the dedicated
+    # block below. The template refers to them as turnos/..., which is not a
+    # path at the repo root.
+    if ($rel.StartsWith('turnos/')) { continue }
     $referenced.Add($rel) | Out-Null
 }
 $referenced.Add('sitemap.xml') | Out-Null
@@ -345,12 +375,23 @@ if (-not (Test-Path -LiteralPath $turnosSrc)) {
 New-Item -ItemType Directory -Path $turnosDest -Force | Out-Null
 $turnosExts = $allowedExts + @('.html')
 Get-ChildItem -LiteralPath $turnosSrc -File | ForEach-Object {
+    # form.html is a build-time partial. It is injected into index.html and
+    # the home template; it must not be published as its own URL.
+    if ($_.Name -eq 'form.html') { return }
     $ext = $_.Extension.ToLowerInvariant()
     if ($turnosExts -notcontains $ext) {
         Fail-Build "Disallowed asset extension in src/turnos: $($_.Name)"
     }
-    Copy-Item -LiteralPath $_.FullName -Destination (Join-Path $turnosDest $_.Name) -Force
-    $copiedFiles.Add([pscustomobject]@{ Rel = ('turnos/' + $_.Name); Size = $_.Length })
+    $destPath = Join-Path $turnosDest $_.Name
+    if ($_.Name -eq 'index.html') {
+        $turnosIndex = [System.IO.File]::ReadAllText($_.FullName, [System.Text.UTF8Encoding]::new($false))
+        $turnosIndex = Inject-TurnosForm -Html $turnosIndex -FormHtml $turnosForm
+        Write-LfUtf8 -Path $destPath -Content $turnosIndex
+        $copiedFiles.Add([pscustomobject]@{ Rel = ('turnos/' + $_.Name); Size = (Get-Item -LiteralPath $destPath).Length })
+        return
+    }
+    Copy-Item -LiteralPath $_.FullName -Destination $destPath -Force
+    $copiedFiles.Add([pscustomobject]@{ Rel = ('turnos/' + $_.Name); Size = (Get-Item -LiteralPath $destPath).Length })
 }
 
 # Self-hosted webfonts and their OFL licenses live in a subfolder of src/turnos,

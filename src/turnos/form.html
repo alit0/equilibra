@@ -1,0 +1,150 @@
+  <p class="step-label" id="step-label">Paso 1 de 5 — Sede</p>
+
+  <p id="live" class="sr-only" aria-live="polite"></p>
+
+  <section class="panel" data-step="1" aria-labelledby="title-1">
+    <h1 id="title-1" tabindex="-1">¿Dónde te atendemos?</h1>
+    <p class="lead">Evaluación de pisada · 30 min · $20.000</p>
+    <fieldset class="sedes" id="sedes">
+      <legend class="sr-only">Elegí una sede</legend>
+    </fieldset>
+    <p class="note">En el estudio te dicen si hace falta plantilla. Hoy solo reservás la evaluación.</p>
+    <p class="field-error" id="sede-error" hidden></p>
+    <button type="button" class="cta" id="cta-sede">Elegir esta sede</button>
+  </section>
+
+  <section class="panel" data-step="2" hidden aria-labelledby="title-2">
+    <button type="button" class="back" data-back>Volver atrás</button>
+    <h1 id="title-2" tabindex="-1">Elegí un día</h1>
+    <p class="lead" id="day-context"></p>
+    <div class="calendar" id="calendar">
+      <div class="cal-nav">
+        <button type="button" class="cal-nav-btn" id="cal-prev" aria-label="Mes anterior">‹</button>
+        <p class="cal-month" id="cal-month"></p>
+        <button type="button" class="cal-nav-btn" id="cal-next" aria-label="Mes siguiente">›</button>
+      </div>
+      <div class="cal-dows" aria-hidden="true">
+        <span>L</span><span>M</span><span>X</span><span>J</span><span>V</span><span>S</span><span>D</span>
+      </div>
+      <div class="cal-grid" id="cal-grid" role="grid" aria-labelledby="cal-month"></div>
+    </div>
+    <p class="note" id="cal-legend">Los días en gris no tienen turno.</p>
+    <p class="field-error" id="day-error" hidden role="alert"></p>
+    <button type="button" class="cta" id="cta-day">Reservar este día</button>
+  </section>
+
+  <section class="panel" data-step="3" hidden aria-labelledby="title-3">
+    <button type="button" class="back" data-back>Volver atrás</button>
+    <h1 id="title-3" tabindex="-1">Elegí un horario</h1>
+    <p class="lead" id="hour-context"></p>
+    <div class="hours" id="hours" role="listbox" aria-label="Horarios disponibles"></div>
+    <p class="note" id="hour-hint">Turnos de 30 minutos.</p>
+    <p class="field-error" id="hour-error" hidden role="alert"></p>
+    <button type="button" class="cta" id="cta-hour">Elegir este horario</button>
+  </section>
+
+  <section class="panel" data-step="4" hidden aria-labelledby="title-4">
+    <button type="button" class="back" data-back>Volver atrás</button>
+    <h1 id="title-4" tabindex="-1">Tus datos</h1>
+    <div class="error-summary" id="error-summary" hidden tabindex="-1">
+      <p class="error-summary-title" id="error-summary-title"></p>
+      <ul id="error-summary-list"></ul>
+    </div>
+    <form id="datos-form" novalidate>
+      <div class="hp" aria-hidden="true">
+        <input id="website" name="website" type="text" tabindex="-1" autocomplete="off" value="">
+      </div>
+      <div class="field" id="field-first">
+        <label for="first-name">Nombre</label>
+        <input id="first-name" name="firstName" type="text" autocomplete="given-name" required maxlength="80" aria-describedby="first-name-error">
+        <p class="field-error" id="first-name-error" hidden></p>
+      </div>
+      <div class="field" id="field-last">
+        <label for="last-name">Apellido</label>
+        <input id="last-name" name="lastName" type="text" autocomplete="family-name" required maxlength="80" aria-describedby="last-name-error">
+        <p class="field-error" id="last-name-error" hidden></p>
+      </div>
+      <div class="field" id="field-email">
+        <label for="email">Email</label>
+        <p class="hint" id="email-hint">Ahí te llega el email con el link para abonar el estudio.</p>
+        <input id="email" name="email" type="email" inputmode="email" autocomplete="email" required maxlength="120" aria-describedby="email-hint email-error">
+        <p class="field-error" id="email-error" hidden></p>
+      </div>
+      <p class="email-suggest" id="email-suggest" hidden role="status"><span id="email-suggest-lead"></span><button type="button" class="text-link" id="email-suggest-accept"></button><span id="email-suggest-tail"></span></p>
+      <div class="field" id="field-email-confirm">
+        <label for="email-confirm">Confirmá tu email</label>
+        <input id="email-confirm" name="emailConfirm" type="email" inputmode="email" autocomplete="off" required maxlength="120" aria-describedby="email-confirm-error">
+        <p class="field-error" id="email-confirm-error" hidden></p>
+      </div>
+      <div class="field" id="field-phone">
+        <label for="phone">Teléfono</label>
+        <input id="phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" required maxlength="24" aria-describedby="phone-error">
+        <p class="field-error" id="phone-error" hidden></p>
+      </div>
+      <div class="field" id="field-notes">
+        <label for="notes">Contanos algo más (opcional)</label>
+        <textarea id="notes" name="notes" autocomplete="off" maxlength="280" rows="3" placeholder="Si tenés dolor en algún punto, una lesión previa, o ya usás plantillas, escribilo acá." aria-label="Contanos algo más, opcional. Si tenés dolor en algún punto, una lesión previa, o ya usás plantillas, escribilo acá."></textarea>
+      </div>
+      <button type="submit" class="cta" id="cta-datos">Ir a confirmar</button>
+    </form>
+  </section>
+
+  <section class="panel" data-step="5" hidden aria-labelledby="title-5">
+    <button type="button" class="back" data-back>Volver atrás</button>
+    <h1 id="title-5" tabindex="-1">Revisá tu turno</h1>
+    <dl class="summary" id="summary"></dl>
+    <aside class="pay-note">
+      <p class="pay-eyebrow">Cómo sigue</p>
+      <p class="pay-title">Te llega un email con el link para abonar el estudio y dejar el turno confirmado. Tenés 24 horas.</p>
+      <p class="pay-alt">Si no lo ves, fijate en spam o escribinos por WhatsApp.</p>
+    </aside>
+    <div class="checks">
+      <div class="check-row-wrap">
+        <label class="check-row" id="field-terms">
+          <input type="checkbox" id="terms" name="terms" required aria-describedby="terms-error">
+          <span>Leí y acepto los</span>
+        </label>
+        <button type="button" class="text-link" data-open="terms-dialog">Términos y Condiciones</button>
+      </div>
+      <p class="field-error" id="terms-error" hidden></p>
+      <div class="check-row-wrap">
+        <label class="check-row" id="field-privacy">
+          <input type="checkbox" id="privacy" name="privacy" required aria-describedby="privacy-error">
+          <span>Leí y acepto la</span>
+        </label>
+        <button type="button" class="text-link" data-open="privacy-dialog">Política de Privacidad</button>
+      </div>
+      <p class="field-error" id="privacy-error" hidden></p>
+    </div>
+    <p class="field-error" id="confirm-error" hidden></p>
+    <div class="demo-banner" id="booking-result" hidden role="status" tabindex="-1"></div>
+    <button type="button" class="cta" id="cta-confirm">Pedir la evaluación</button>
+  </section>
+
+<dialog id="terms-dialog" class="legal" aria-labelledby="terms-dialog-title">
+  <h2 id="terms-dialog-title">Términos y Condiciones</h2>
+  <p>Al reservar un turno en Equilibra aceptás estas condiciones:</p>
+  <ol>
+    <li>La reserva online confirma una solicitud de turno sujeta a disponibilidad y confirmación del equipo.</li>
+    <li>Te pedimos avisar con la mayor anticipación posible si no podés asistir (idealmente 24 horas).</li>
+    <li>El turno de evaluación no implica obligación de adquirir plantillas.</li>
+    <li>Los datos que completes deben ser reales y actualizados para poder contactarte.</li>
+    <li>Equilibra puede reprogramar un turno por motivos operativos y te avisará por los canales de contacto informados.</li>
+    <li>La atención se brinda en las sedes y horarios publicados o confirmados al momento de la reserva.</li>
+    <li>Ante dudas, escribinos a soyequilibra@gmail.com o por WhatsApp.</li>
+  </ol>
+  <form method="dialog"><button class="cta cta-dialog" type="submit">Cerrar</button></form>
+</dialog>
+
+<dialog id="privacy-dialog" class="legal" aria-labelledby="privacy-dialog-title">
+  <h2 id="privacy-dialog-title">Política de Privacidad</h2>
+  <p><strong>Responsable:</strong> Equilibra.</p>
+  <p><strong>Contacto:</strong> soyequilibra@gmail.com · https://soyequilibra.com.ar</p>
+  <p><strong>Datos que recolectamos:</strong> nombre, apellido, email, teléfono y, si los completás, domicilio, ciudad, código postal y notas del turno.</p>
+  <p><strong>Finalidad:</strong> gestionar reservas, recordatorios, reprogramaciones, atención y seguimiento del servicio.</p>
+  <p><strong>Base:</strong> tu solicitud de turno y la gestión de la relación comercial/asistencial.</p>
+  <p><strong>Conservación:</strong> mientras sea necesario para la agenda y el seguimiento del servicio, o según el plazo de retención configurado en el sistema.</p>
+  <p><strong>Cesiones:</strong> no vendemos tus datos. Pueden tratarlos proveedores técnicos que alojan el sistema de turnos, solo para operar el servicio.</p>
+  <p><strong>Derechos:</strong> podés pedir acceso, actualización o baja de tus datos escribiendo a soyequilibra@gmail.com.</p>
+  <form method="dialog"><button class="cta cta-dialog" type="submit">Cerrar</button></form>
+</dialog>

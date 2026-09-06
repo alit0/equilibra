@@ -4,7 +4,7 @@
   var EA = "https://turnos.allitto.com/index.php/booking";
   var WRITE_RE = /booking\/register|book_appointment/i;
   // Single place to point the reservation POST. Change this at deploy.
-  var BOOKING_URL = "http://127.0.0.1:8787/api/reservar";
+  var BOOKING_URL = "https://turnos.allitto.com/api/reservar";
   var WHATSAPP_URL = "https://wa.me/5491132595130";
   var MONTHS = [
     "enero", "febrero", "marzo", "abril", "mayo", "junio",
@@ -218,7 +218,7 @@
     beginHoursFetch(state.sede, state.date);
   }
 
-  function setStep(n) {
+  function setStep(n, silent) {
     state.step = n;
     var labels = {
       1: "Paso 1 de 5 — Sede",
@@ -248,8 +248,35 @@
       p.hidden = step !== n;
     });
     var title = document.getElementById("title-" + n);
-    if (title) title.focus({ preventScroll: false });
-    window.scrollTo(0, 0);
+    if (title) title.focus({ preventScroll: true });
+    if (!silent) scrollFormIntoView();
+  }
+
+  // Bring the FORM back into view on a step change - never the document top.
+  // This markup is mounted twice: standalone at /turnos/ (form at the top) and
+  // embedded in the home inside #turnos, far below the hero. A window.scrollTo(0, 0)
+  // reads fine standalone and throws the patient back up to the hero on every
+  // single step when embedded. Scroll the form's own container instead, and offset
+  // by the sticky header so the step title does not hide under it.
+  function scrollFormIntoView() {
+    var root = document.querySelector(".turnos-root") || document.getElementById("app");
+    if (!root || typeof root.getBoundingClientRect !== "function") return;
+    var offset = 12;
+    var header = document.querySelector("header");
+    if (header) {
+      var pos = window.getComputedStyle(header).position;
+      if (pos === "fixed" || pos === "sticky") {
+        offset += header.getBoundingClientRect().height;
+      }
+    }
+    var top = root.getBoundingClientRect().top + window.pageYOffset - offset;
+    if (top < 0) top = 0;
+    var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    try {
+      window.scrollTo({ top: top, behavior: reduce ? "auto" : "smooth" });
+    } catch (e) {
+      window.scrollTo(0, top);
+    }
   }
 
   function renderSedes() {
@@ -1069,6 +1096,6 @@
   });
 
   renderSedes();
-  setStep(1);
+  setStep(1, true); // primer render: no scrollear, el paciente recien abrio la pagina
   prefetchSelectedSede();
 })();
