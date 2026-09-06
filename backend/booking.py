@@ -107,6 +107,8 @@ class BookingError(Exception):
 class BookingResult:
     appointment_id: int
     appointment_hash: str | None
+    customer_id: int
+    customer_email: str
 
 
 class EaGateway(Protocol):
@@ -601,4 +603,6 @@ def book(
     return BookingResult(
         appointment_id=created_id,
         appointment_hash=created.get("hash"),
+        customer_id=customer_id,
+        customer_email=str(ea_customer.get("email") or email),
     )

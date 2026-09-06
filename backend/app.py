@@ -25,15 +25,20 @@ from http import HTTPStatus
 
 from flask import Flask, jsonify, request
 
-from .booking import BookingError, book
+from .booking import BookingError, BookingResult, book
 from .defenses import honeypot_filled, suspicious_fill_time
 from .ea_client import EaUnavailable
 from .idempotency import IdempotencyStore
+from .sheets_log import SheetWriter, config_writer, log_reservation
 
 log = logging.getLogger("equilibra.reservar")
 
 # Default origin served by the production site; configurable via env (csv).
 DEFAULT_ALLOWED_ORIGINS = ("https://soyequilibra.com.ar",)
+
+# Sentinel distinguishing "caller did not pass sheet_writer" from a deliberate
+# None (toggle the log off). Defaults to the env-configured writer.
+_UNSET = object()
 
 # Generic, indistinguishable rejection used by every anti-abuse guard. We never
 # tell a bot WHICH probe tripped, or it would just avoid it next time.
@@ -61,14 +66,24 @@ def _load_allowed_origins(override: list[str] | None = None) -> tuple[str, ...]:
     return DEFAULT_ALLOWED_ORIGINS
 
 
-def make_app(*, gateway=None, allowed_origins=None, idempotency_store=None, now_ms_provider=None) -> Flask:
+def make_app(
+    *,
+    gateway=None,
+    allowed_origins=None,
+    idempotency_store=None,
+    now_ms_provider=None,
+    sheet_writer: SheetWriter | None = _UNSET,
+) -> Flask:
     """Build the Flask app. Dependencies are injectable for tests (no network).
 
     ``gateway``            - the Easy!Appointments transport (default real).
     ``allowed_origins``    - CORS whitelist override (production default from env).
-    ``idempotency_store``  - the key -> appointment map (default in-process).
+    ``idempotency_store``  - the key -> BookingResult map (default in-process).
     ``now_ms_provider``    - injects the request-time clock for tests; ``None``
                              uses the real wall clock.
+    ``sheet_writer``       - the Google Sheet sink for reservation rows; defaults
+                             to the live writer from ``EQUILIBRA_SHEETS_*`` when
+                             configured, otherwise ``None`` (log disabled).
     """
     from .ea_client import EaClient  # local import keeps creation cheap
 
@@ -76,6 +91,8 @@ def make_app(*, gateway=None, allowed_origins=None, idempotency_store=None, now_
     store = idempotency_store or IdempotencyStore()
     allowed = _load_allowed_origins(allowed_origins)
     now_ms = now_ms_provider or (lambda: _real_now_ms())
+    if sheet_writer is _UNSET:
+        sheet_writer = config_writer()
     app = Flask(__name__)
 
     @app.errorhandler(404)
@@ -158,8 +175,19 @@ def make_app(*, gateway=None, allowed_origins=None, idempotency_store=None, now_
             log.warning("reservation rejected: unusable idempotency_key")
             return _suspicious_response()
 
+        # book() runs at most once per key (idempotency). A fresh run is a NEW
+        # real turn and must log exactly one sheet row; a replay of an already
+        # served key is the same turn and must NOT log again. The flag records
+        # whether create() actually executed this call.
+        created_now = False
+
+        def _create() -> BookingResult:
+            nonlocal created_now
+            created_now = True
+            return book(gateway, payload)
+
         try:
-            served_id = store.execute_once(key, lambda: book(gateway, payload).appointment_id)
+            served = store.execute_once(key, _create)
         except BookingError as err:
             status = {
                 "requested_hour_is_unavailable": HTTPStatus.CONFLICT,
@@ -179,7 +207,15 @@ def make_app(*, gateway=None, allowed_origins=None, idempotency_store=None, now_
                 [],
             )
 
-        return _reservation_response(served_id)
+        # The turn is created and the response is decided (always 201). NOW the
+        # sheet write is attempted, strictly after and decoupled: a broken or
+        # missing sheet can only be logged, never change this reservation's
+        # outcome. ``log_reservation`` is the single, load-bearing swallow — it
+        # never raises, so nothing here has to guard it again (if it did, this
+        # whole guarantee would be untestable: see the mutation demo).
+        if created_now:
+            log_reservation(sheet_writer, payload, served)
+        return _reservation_response(served.appointment_id)
 
     return app
 
