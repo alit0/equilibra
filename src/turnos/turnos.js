@@ -241,7 +241,7 @@
       els.ctaConfirm.setAttribute("aria-busy", "false");
       if (els.checks) els.checks.hidden = false;
       var title5 = document.getElementById("title-5");
-      if (title5) title5.textContent = "Revisá tu turno";
+      if (title5) title5.textContent = "Reservá tu turno";
     }
     els.panels.forEach(function (p) {
       var step = Number(p.getAttribute("data-step"));
@@ -701,7 +701,7 @@
       row("Fecha", formatLong(state.date), 2) +
       row("Hora", state.hour, 3) +
       row("Duración", "30 minutos") +
-      row("Estudio de marcha", "$20.000");
+      row("Seña", "$20.000");
     els.summary.querySelectorAll(".change").forEach(function (btn) {
       btn.addEventListener("click", function () {
         setStep(Number(btn.getAttribute("data-goto")));
@@ -913,7 +913,7 @@
     }
 
     showConfirmError(
-      "No pudimos confirmar el turno. El problema es nuestro, no tuyo.",
+      "No pudimos reservar el turno. El problema es nuestro, no tuyo.",
       { whatsapp: true }
     );
   }
@@ -1064,7 +1064,7 @@
     }).catch(function () {
       setConfirmBusy(false);
       showConfirmError(
-        "No pudimos confirmar el turno. El problema es nuestro, no tuyo.",
+        "No pudimos reservar el turno. El problema es nuestro, no tuyo.",
         { whatsapp: true }
       );
     });
