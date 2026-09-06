@@ -584,6 +584,19 @@ class HappyPathTests(unittest.TestCase):
         created_customer = next(iter(gw.customers.values()))
         self.assertEqual(created_customer["phone_number"], "11 5555 2222")
 
+    def test_appointment_start_stays_clinic_naive_not_converted(self):
+        # EQUILIBRA-014 guard: the root cause was a *missing timezone on the
+        # customer*, NOT a timezone bug on the slot. The `start` we hand EA must
+        # keep the naive clinic string "{date} {hour}:00" ground on clinic-local
+        # time (provider zone); converting it to UTC here would corrupt cupo,
+        # Google Calendar and the real clinic-clock hour. Pinning it: 08:00 must
+        # be stored as 08:00 no matter the argument's own zone tricks.
+        gw = FakeGateway()
+        gw.set_available("2026-09-21", ["08:00"])
+        book(gw, _payload(selected_date="2026-09-21", selected_hour="08:00"))
+        appt = next(iter(gw.appointments.values()))
+        self.assertEqual(appt["start"], "2026-09-21 08:00:00")
+
 
 if __name__ == "__main__":
     unittest.main()

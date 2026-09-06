@@ -12,7 +12,7 @@ from __future__ import annotations
 import json
 import unittest
 
-from backend.ea_client import EaClient, EaUnavailable
+from backend.ea_client import CUSTOMER_TIMEZONE, EaClient, EaUnavailable
 
 from backend.tests.ea_server import EaTestServer, from_json, hang_forever, paginate_list
 
@@ -165,6 +165,40 @@ class EaClientTransportTests(unittest.TestCase):
         # The cap made the read stop after exactly max_pages round-trips, not hang.
         appt_requests = [r for r in self.server.record if r["method"] == "GET" and r["path"] == "/api/v1/appointments"]
         self.assertEqual(len(appt_requests), 5)
+
+    def test_create_customer_sends_timezone_same_as_provider(self):
+        # EQUILIBRA-014: our POST /customers used to omit `timezone`, so EA's
+        # column default (UTC) parked the patient in a different zone than the
+        # provider and every confirmation mail shifted +3h. The fix must send
+        # the exact zone string EA stores (not the long IANA alias).
+        def echo(path, method, query, body, h):
+            return from_json(
+                {
+                    "id": 14,
+                    "firstName": body.get("firstName"),
+                    "lastName": body.get("lastName"),
+                    "email": body.get("email"),
+                    "phone": body.get("phone"),
+                    "timezone": body.get("timezone"),
+                },
+                handler=h,
+            )
+
+        self.server.route("POST", "/api/v1/customers", echo)
+        self.client.create_customer(
+            {
+                "first_name": "Claudia",
+                "last_name": "Prueba",
+                "email": "claudia@example.com",
+                "phone_number": "+549",
+            }
+        )
+
+        posts = [r for r in self.server.record if r["method"] == "POST" and r["path"] == "/api/v1/customers"]
+        self.assertEqual(len(posts), 1)
+        sent = posts[0]["body"] or {}
+        self.assertEqual(sent.get("timezone"), CUSTOMER_TIMEZONE)
+        self.assertEqual(sent.get("timezone"), "America/Buenos_Aires")
 
 
 if __name__ == "__main__":
