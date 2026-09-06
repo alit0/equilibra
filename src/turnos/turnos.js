@@ -557,6 +557,7 @@
       err.hidden = !msg;
       err.textContent = msg || "";
     }
+    announce(msg || "");
   }
 
   function hasLetters(s) { return /[A-Za-zÁÉÍÓÚÜÑáéíóúüñ]/.test(s); }
