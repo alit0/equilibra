@@ -2,3 +2,5 @@
 # Tests use the standard library `unittest` only and mock Easy!Appointments,
 # so there is nothing extra to install to run them.
 flask>=3.0
+gunicorn>=22.0
+gspread>=6.0

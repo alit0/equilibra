@@ -1,0 +1,44 @@
+# Equilibra reservation API — a stack of its own.
+# NEVER add this service to /opt/easyappointments. `docker compose down` here
+# must not be able to stop the clinic's Easy!Appointments containers.
+name: equilibra-api
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: equilibra-api:local
+    container_name: equilibra-api
+    restart: unless-stopped
+    user: "1000:1000"
+    ports:
+      - "127.0.0.1:8091:8000"
+    environment:
+      EQUILIBRA_EA_API_TOKEN: ${EQUILIBRA_EA_API_TOKEN}
+      EQUILIBRA_ALLOWED_ORIGINS: "https://soyequilibra.com.ar"
+      EQUILIBRA_SHEETS_ID: "1Y3egw0sqH71smVe6qrI9JfowXO-8Xhk_2IbWbtZpLMM"
+      EQUILIBRA_SHEETS_CREDENTIALS: /secrets/service-account.json
+    volumes:
+      - /opt/bots/equilibra/secrets/service-account.json:/secrets/service-account.json:ro
+    mem_limit: 256m
+    cpus: 0.50
+    security_opt:
+      - no-new-privileges:true
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import socket; s=socket.create_connection(('127.0.0.1',8000),2); s.close()",
+        ]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 20s
