@@ -1085,11 +1085,23 @@
     });
   });
 
+  var dialogOpeners = {};
+  document.querySelectorAll("dialog").forEach(function (d) {
+    d.addEventListener("close", function () {
+      var opener = dialogOpeners[d.id];
+      delete dialogOpeners[d.id];
+      if (!opener || !opener.isConnected) return;
+      if (document.activeElement && document.activeElement !== document.body) return;
+      opener.focus();
+    });
+  });
   document.querySelectorAll("[data-open]").forEach(function (btn) {
     btn.addEventListener("click", function (e) {
       e.preventDefault();
       e.stopPropagation();
-      document.getElementById(btn.getAttribute("data-open")).showModal();
+      var dialog = document.getElementById(btn.getAttribute("data-open"));
+      dialogOpeners[dialog.id] = btn;
+      dialog.showModal();
     });
   });
 
