@@ -436,7 +436,7 @@ def verify_a15(page) -> dict:
 
 
 def verify_a13(page) -> dict:
-    """Step 5 copy: study label, how-it-follows block, 24h once. No layout change."""
+    """Step 5 copy aligned with the confirmation email: single service, seña, no invented deadlines or payment links."""
     go_to_confirm(page)
     dts = page.locator(".summary dt").all_inner_texts()
     seña_row = page.locator(".summary-row").filter(has_text="$20.000")
@@ -447,20 +447,20 @@ def verify_a13(page) -> dict:
     page.screenshot(path=str(SHOTS / "a13-paso5-copy-390.png"), full_page=True)
     result = {"dts": dts, "eyebrow": eyebrow, "title": title, "alt": alt, "pay_note": note}
     dts_l = [dt.strip().lower() for dt in dts]
-    assert "seña" not in dts_l and "sena" not in dts_l
-    assert "estudio de marcha" in dts_l
+    assert "servicio" in dts_l and "seña" in dts_l
+    assert "estudio de marcha" not in dts_l
     assert seña_row.locator("dd").inner_text().strip() == "$20.000"
     assert eyebrow == "Cómo sigue"
-    assert title == "Te llega un email con el link para abonar el estudio y dejar el turno confirmado. Tenés 24 horas."
+    assert title == "Te llega un mail con el alias y el CVU para transferir la seña de $20.000. Después mandanos el comprobante por WhatsApp y te confirmamos el turno."
     assert alt == "Si no lo ves, fijate en spam o escribinos por WhatsApp."
-    assert note.lower().count("24 horas") == 1
+    assert note == "Cómo sigue\n" + title + "\n" + alt
     assert "todavía no pagás" not in note.lower() and "todavia no pagas" not in note.lower()
     assert "libera" not in note.lower()
     return result
 
 
 def verify_a9(page) -> dict:
-    """24h window lives once in the step 5 how-it-follows copy. No timer."""
+    """Step 5 how-it-follows copy carries no invented deadline or payment link. No timer."""
     return verify_a13(page)
 
 
