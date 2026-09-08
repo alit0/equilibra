@@ -25,6 +25,47 @@ body.turnos-root {
 .turnos-root, .turnos-root *, .turnos-root *::before, .turnos-root *::after { box-sizing: border-box; }
 .turnos-root { margin: 0; }
 
+/* ---------------------------------------------------------------------------
+   Isolation from the landing page.
+
+   This form was built standalone for /turnos/, where no global stylesheet
+   existed. It is also inlined into the landing (`#turnos`), and there the
+   landing's element and class selectors reach inside it. They do not lose on
+   specificity — the form simply never declared these properties, so nothing
+   competed and the landing's values applied unopposed:
+
+     section { padding: clamp(76px,10vw,150px); border-top: 1px solid ... }
+       -> every step inherited ~150px of dead vertical space and a stray rule.
+     .hint  { position: absolute; z-index: 5; ... }
+       -> the email hint left the flow and landed on top of the submit button.
+     .lead, h1,h2,h3 -> display type sizing meant for the landing's headers.
+
+   Reset here rather than renaming the form's classes: renaming would touch
+   form.html, turnos.js and every selector in this file, and the next landing
+   class would collide again anyway. Keep this block first so the component
+   rules below win normally.
+   --------------------------------------------------------------------------- */
+.turnos-root .panel {
+  padding: 20px;
+  border: 0;
+}
+.turnos-root .hint {
+  position: static;
+  z-index: auto;
+  inset: auto;
+  display: block;
+  align-items: initial;
+  gap: initial;
+  pointer-events: auto;
+  text-align: left;
+  transform: none;
+}
+.turnos-root .lead {
+  text-align: left;
+  max-width: none;
+  text-transform: none;
+}
+
 .turnos-root {
   background: var(--cream);
   color: var(--ink);
@@ -33,7 +74,9 @@ body.turnos-root {
   line-height: 1.55;
 }
 .turnos-root img { max-width: 100%; }
-.turnos-root button, .turnos-root input { font: inherit; color: inherit; }
+/* `textarea` was missing here, so the note field fell back to the browser's
+   monospace default and read as a different typeface than the rest. */
+.turnos-root button, .turnos-root input, .turnos-root textarea, .turnos-root select { font: inherit; color: inherit; }
 .turnos-root a { color: inherit; }
 .turnos-root :focus { outline: none; }
 .turnos-root :focus-visible {
@@ -247,6 +290,14 @@ body.turnos-root {
   flex-direction: column;
   gap: 10px;
 }
+/* From tablet up the calendar stops stretching to the full panel width, where it
+   read as oversized. Only the width is capped: the height is content-driven on
+   purpose. The grid reserves `repeat(6, 44px)` because some months need six
+   weeks (November 2026 does), and 44px is the touch target floor — so the box
+   needs 376px and any max-height below that clips a real, bookable day. */
+@media (min-width: 700px) {
+  .turnos-root .calendar { max-width: 400px; }
+}
 .turnos-root .cal-nav {
   display: flex;
   align-items: center;
@@ -382,6 +433,18 @@ body.turnos-root {
   border-radius: 0;
 }
 .turnos-root .field input::placeholder { color: rgba(20, 17, 12, 0.59); /* 4.63:1 on #FBF4E7 */ }
+/* Chrome paints autofilled fields pale blue, which breaks the cream palette on
+   the whole step. There is no property to opt out, so the inset shadow is the
+   documented way to repaint the field with our own surface colour. */
+.turnos-root .field input:-webkit-autofill,
+.turnos-root .field input:-webkit-autofill:hover,
+.turnos-root .field input:-webkit-autofill:focus,
+.turnos-root .field textarea:-webkit-autofill {
+  -webkit-box-shadow: 0 0 0 1000px var(--paper) inset;
+  box-shadow: 0 0 0 1000px var(--paper) inset;
+  -webkit-text-fill-color: var(--ink);
+  caret-color: var(--ink);
+}
 .turnos-root .field textarea {
   width: 100%;
   min-height: 96px;
@@ -506,10 +569,15 @@ body.turnos-root {
   padding: 0;
 }
 
+/* "Cómo sigue" is neutral, forward-looking information — not a warning. It used
+   the ember border, which is the error colour in this system (field errors, the
+   error summary), so the last step read as if something had gone wrong. Green is
+   the system accent and already carries the "this is on track" meaning. */
 .turnos-root .pay-note {
   background: var(--paper);
-  border: 2px solid var(--ember);
-  padding: 16px;
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--green-dark);
+  padding: 16px 18px;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -520,7 +588,7 @@ body.turnos-root {
   font-weight: 500;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: #A45223; /* 4.52:1 on #F4E7D4 */
+  color: var(--green-dark); /* 5.9:1 on #FBF4E7 */
 }
 .turnos-root .pay-title {
   margin: 0;
@@ -616,17 +684,47 @@ body.turnos-root {
 
 @media (min-width: 941px) {
   .turnos-root .page { padding: 48px var(--pad) 80px; gap: 20px; }
-  .turnos-root h1 { font-size: 36px; }
+  .turnos-root h1 { font-size: 36px; letter-spacing: -0.02em; text-wrap: balance; }
   .turnos-root .sedes {
     display: grid;
     grid-template-columns: 1fr 1fr;
   }
   .turnos-root .cta { width: auto; align-self: start; min-width: 220px; }
   .turnos-root .hours { grid-template-columns: repeat(4, 1fr); }
+
+  /* Supporting text keeps a readable measure instead of running the full width
+     of the panel. */
+  .turnos-root .lead, .turnos-root .note { max-width: 62ch; }
+
+  /* A field's width should suggest how long the value is. Every input used to
+     span the whole panel, so a phone number got the same ~580px as an address.
+     Name/surname pair up; the short values get a cap. */
+  .turnos-root #datos-form {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 22px 20px;
+    align-items: start;
+    max-width: 680px;
+  }
+  .turnos-root #field-email,
+  .turnos-root #field-email-confirm,
+  .turnos-root #field-notes,
+  .turnos-root .email-suggest,
+  .turnos-root #datos-form .cta {
+    grid-column: 1 / -1;
+  }
+  .turnos-root #field-phone input { max-width: 260px; }
+  .turnos-root #field-email input,
+  .turnos-root #field-email-confirm input { max-width: 420px; }
+
+  /* "Cambiar" belongs next to the value it changes. Pinned to the panel's right
+     edge it sat ~500px away from its own row and read as unrelated. */
+  .turnos-root .summary { max-width: 520px; }
+  .turnos-root .summary-row { justify-content: flex-start; gap: 20px; }
+  .turnos-root .summary-row > div:first-child { min-width: 220px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .turnos-root .cta { transition: none; }
   .turnos-root .cal-day.is-skeleton { animation: none; }
 }
-

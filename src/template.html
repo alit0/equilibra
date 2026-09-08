@@ -421,16 +421,46 @@ details p{color:var(--ink2);margin-top:12px;max-width:70ch;font-size:15px}
 .faq{margin-top:44px;max-width:900px}
 
 #turnos{background:var(--cream)}
-.book{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:clamp(22px,3.5vw,40px);margin-top:clamp(28px,4vw,48px);align-items:start}
-.book-copy h3{font-family:var(--disp);font-weight:800;font-size:clamp(28px,3.6vw,46px);letter-spacing:-.035em;line-height:1;margin:0 0 14px}
-.book-copy p{color:var(--ink2);margin:0 0 18px;max-width:46ch;font-size:clamp(15px,1.15vw,17px)}
-.book-list{display:grid;gap:12px;margin:0;padding:0;list-style:none}
-.book-list li{display:grid;grid-template-columns:28px 1fr;gap:12px;align-items:start;color:var(--ink2);font-size:14.5px}
-.book-list b{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:999px;border:1px solid var(--line);font-family:var(--label);font-size:11px;letter-spacing:.08em;color:var(--green)}
+/* The left column is supporting copy — it should not claim half the viewport
+   from the form, which is the actual task. Capped and sticky so it stays with
+   the reader instead of scrolling away into dead space. */
+.book{display:grid;grid-template-columns:minmax(0,380px) minmax(0,1fr);gap:clamp(22px,3.5vw,56px);margin-top:clamp(28px,4vw,48px);align-items:start;max-width:1240px}
+.book-copy h3{font-family:var(--disp);font-weight:800;font-size:clamp(24px,2.2vw,32px);letter-spacing:-.03em;line-height:1.05;margin:0 0 14px;text-wrap:balance}
+.book-copy p{color:var(--ink2);margin:0 0 18px;max-width:44ch;font-size:15px;line-height:1.6}
+.book-list{display:grid;gap:10px;margin:0;padding:0;list-style:none}
+.book-list li{display:grid;grid-template-columns:28px 1fr;gap:12px;align-items:start;color:var(--ink3);font-size:14px;line-height:1.45;transition:color .2s}
+.book-list b{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:999px;border:1px solid var(--line);font-family:var(--label);font-size:11px;letter-spacing:.08em;color:var(--ink3);transition:background .2s,color .2s,border-color .2s}
+/* Two progress indicators that never moved (this list and the form's own "Paso
+   N de 5") left the reader without a real one. `:has()` wires this list to the
+   visible step with no JS; where it is unsupported the list simply stays even,
+   which is what it did before. */
+#turnos .book:has(.panel[data-step="1"]:not([hidden])) .book-list li:nth-child(1),
+#turnos .book:has(.panel[data-step="2"]:not([hidden])) .book-list li:nth-child(2),
+#turnos .book:has(.panel[data-step="3"]:not([hidden])) .book-list li:nth-child(3),
+#turnos .book:has(.panel[data-step="4"]:not([hidden])) .book-list li:nth-child(4),
+#turnos .book:has(.panel[data-step="5"]:not([hidden])) .book-list li:nth-child(5){color:var(--ink)}
+#turnos .book:has(.panel[data-step="1"]:not([hidden])) .book-list li:nth-child(1) b,
+#turnos .book:has(.panel[data-step="2"]:not([hidden])) .book-list li:nth-child(2) b,
+#turnos .book:has(.panel[data-step="3"]:not([hidden])) .book-list li:nth-child(3) b,
+#turnos .book:has(.panel[data-step="4"]:not([hidden])) .book-list li:nth-child(4) b,
+#turnos .book:has(.panel[data-step="5"]:not([hidden])) .book-list li:nth-child(5) b{background:var(--green-dark,#0B7034);border-color:var(--green-dark,#0B7034);color:#fff}
 .book-panel{background:var(--paper);border:1px solid var(--line);padding:0;overflow:hidden;min-width:0}
-.book-actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:14px}
+.book-actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:20px}
 #turnos .turnos-root{width:100%;min-width:0}
 #turnos .turnos-root .page{width:100%;padding:20px clamp(14px,2vw,20px) 28px}
+/* Desktop only — mobile keeps exactly the layout it had. */
+@media(min-width:941px){
+ /* Unlike the rest of the landing, this title is left-aligned: what sits below
+    it is an asymmetric two-column block, so a centred title floated over the
+    form and belonged to neither column. The wider measure also removes the odd
+    break that 21ch forced mid-sentence. */
+ #turnos>.lead{margin-inline:0;text-align:left;max-width:26ch}
+ #turnos .turnos-root .page{padding:clamp(24px,2.4vw,36px) clamp(16px,2.2vw,32px) clamp(28px,2.6vw,40px)}
+ .book-copy{position:sticky;top:calc(var(--navh,72px) + 24px)}
+}
+@media(prefers-reduced-motion:reduce){
+ .book-list li,.book-list b{transition:none}
+}
 @media(max-width:940px){
  .book{grid-template-columns:1fr}
  .book-actions .btn{width:100%;text-align:center}
